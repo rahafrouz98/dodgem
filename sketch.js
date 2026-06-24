@@ -1,4 +1,3 @@
-
 let Engine = Matter.Engine;
 let World = Matter.World;
 let Bodies = Matter.Bodies;
@@ -10,10 +9,15 @@ let numberOfLots = 5;
 let parkingBay;
 let opponentCars =[];
 let playerCar;
+let arenaWidth;
+let arenaHeight;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
-    parkingBay = new ParkingBay(numberOfLots, windowWidth/5, windowHeight);
+    arenaWidth = windowWidth*.9;
+    arenaHeight = windowHeight*.9;
+    parkingBay = new ParkingBay(numberOfLots, (windowWidth-arenaWidth)/2, (windowHeight-arenaHeight)/2 
+                                ,arenaWidth/5, arenaHeight);
 }
 
 function draw() {
@@ -21,6 +25,7 @@ function draw() {
     Matter.Engine.update(engine)
 
     parkingBay.draw();
+
     playerCar?.draw();
 
     //up arrow
@@ -44,7 +49,7 @@ function draw() {
         playerCar?.turnRight(true);
     }
     //left arrow 
-    else if(keyIsDown(37))
+    else if(keyIsDown(37) && (keyIsDown(40) || keyIsDown(38)))
     {
         playerCar?.turnLeft(true);
     }
@@ -70,7 +75,7 @@ function mouseClicked()
 
 
 
-/*#################################functions###################################*/
+/*################################# functions ###################################*/
 function spawnPlayerCar(lotIndex)
 {
     let carPosition = parkingBay.signaling(lotIndex)

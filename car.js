@@ -9,8 +9,8 @@ class Car
         this.accelerate = 0;
         this.#carBody = Bodies.rectangle(_position.x, _position.y, this.#length, this.#width, {
             isStatic:false,
-            friction:0.1,
-            frictionAir:0.08,
+            friction:0.3,
+            frictionAir:0.2,
             restitution:0,
             angle:0,
             density:0.001
@@ -68,12 +68,12 @@ class Car
 
     turnRight(isTurning)
     {
-        this.#carBody.angle += 0.005;
+        this.#carBody.angle += 0.01;
     }
 
     turnLeft(isTurning)
     {
-        this.#carBody.angle -= 0.005;
+        this.#carBody.angle -= 0.01;
     }
     
 }

@@ -11,9 +11,9 @@ class Car
             isStatic:false,
             friction:0.3,
             frictionAir:0.2,
-            restitution:0,
+            restitution:.9,
             angle:0,
-            density:0.001
+            density:0.001,
         }) 
         World.add(engine.world, [this.#carBody]) 
     }
@@ -40,13 +40,14 @@ class Car
         let direction = p5.Vector.fromAngle(this.#carBody.angle,1 );
         let force = direction.mult(this.#accelerate,this.#accelerate);
         Matter.Body.applyForce(this.#carBody, this.#carBody.position, force);
+        console.log(this.#accelerate);
     }
     
     moveForward(isAccelerating) 
     {
         if(isAccelerating)
         {
-           this.#accelerate+=0.0017 ;
+           this.#accelerate+=0.002 ;
         }
         else
         {
@@ -60,7 +61,7 @@ class Car
         {
            this.#accelerate-=0.001 ;
         }
-        else
+        else 
         {
             this.#accelerate=0; 
         }

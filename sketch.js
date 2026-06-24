@@ -11,13 +11,15 @@ let opponentCars =[];
 let playerCar;
 let arenaWidth;
 let arenaHeight;
+let northGuard;
 
 function setup() {
-    createCanvas(windowWidth, windowHeight);
-    arenaWidth = windowWidth*.9;
-    arenaHeight = windowHeight*.9;
+    createCanvas(1400, 700);
+    arenaWidth = 1400;
+    arenaHeight = 700;
     parkingBay = new ParkingBay(numberOfLots, (windowWidth-arenaWidth)/2, (windowHeight-arenaHeight)/2 
                                 ,arenaWidth/5, arenaHeight);
+    northGuard = new Guard(25,25, 1375,675, 10, 10);
 }
 
 function draw() {
@@ -27,6 +29,7 @@ function draw() {
     parkingBay.draw();
 
     playerCar?.draw();
+    northGuard.draw();
 
     //up arrow
     if(keyIsDown(38))
@@ -53,8 +56,6 @@ function draw() {
     {
         playerCar?.turnLeft(true);
     }
-
-
 }
 
 /*################################# interactions ###############################*/

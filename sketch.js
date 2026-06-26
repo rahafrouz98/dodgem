@@ -1,89 +1,153 @@
-let Engine = Matter.Engine;
-let World = Matter.World;
-let Bodies = Matter.Bodies;
-let engine = Engine.create();
-engine.gravity.y = 0;
-engine.gravity.y = 0;
+import PlayerCar from "./PlayerCar.js"
+import ParkingBay from "./ParkingBay.js"
+import Guard from "./Guard.js"
+import OpponentCarA from "./OpponentCarA.js"
+import OpponentCarB from "./OpponentCarB.js"
 
-let numberOfLots = 5;
-let parkingBay;
-let opponentCars =[];
-let playerCar;
-let arenaWidth;
-let arenaHeight;
-let northGuard;
+let {Engine, Events} = Matter
 
-function setup() {
-    createCanvas(1400, 700);
-    arenaWidth = 1400;
-    arenaHeight = 700;
-    parkingBay = new ParkingBay(numberOfLots, (windowWidth-arenaWidth)/2, (windowHeight-arenaHeight)/2 
-                                ,arenaWidth/5, arenaHeight);
-    northGuard = new Guard(25,25, 1375,675, 10, 10);
-}
-
-function draw() {
-    background(215,252,251);
-    Matter.Engine.update(engine)
-
-    parkingBay.draw();
-
-    playerCar?.draw();
-    northGuard.draw();
-
-    //up arrow
-    if(keyIsDown(38))
-    {
-        playerCar?.moveForward(true);
-    }
-    //down arrow
-    else if (keyIsDown(40))
-    {
-        playerCar?.moveBackward(true);
-    }
-    else
-    {
-        playerCar?.moveForward(false);
-        playerCar?.moveBackward(false);
-    }
-    //right arrow
-    if(keyIsDown(39) && (keyIsDown(40) || keyIsDown(38)))
-    {
-        playerCar?.turnRight(true);
-    }
-    //left arrow 
-    else if(keyIsDown(37) && (keyIsDown(40) || keyIsDown(38)))
-    {
-        playerCar?.turnLeft(true);
-    }
-}
-
-/*################################# interactions ###############################*/
-
-function mouseClicked()
+const sketch = (p)=>
 {
+    let engine = Engine.create();
+    engine.gravity.y = 0;
+    engine.gravity.y = 0;
+        
+    let parkingBay;
+    let playerCar;
+    let arenaWidth;
+    let arenaHeight;
+    let guard;
+    let carA_SVG;
+    let carB_SVG
+    let playerCar_SVG;
+    let opponentCars=[]
+    let numberOfOpponentCars = 4;
+    let mode = 2;
 
-    if(keyIsDown(73) )
+    p.preload = ()=>
     {
-        let lotIndex = parkingBay.isLotAvailavle(mouseX, mouseY)
-        if(lotIndex != -1)
+        carA_SVG = p.loadImage("./assets/carA.svg");
+        carB_SVG = p.loadImage("./assets/carB.svg")
+        playerCar_SVG = p.loadImage("./assets/playerCar.svg");
+    }
+
+    p.setup = ()=>
+    {
+        p.createCanvas(1400, 700);
+        let barrierThickness = 10;
+        parkingBay = new ParkingBay( barrierThickness, barrierThickness,
+                                    p.width/5, p.height-(barrierThickness*2), engine);
+        guard = new Guard(25,25, 1375,675, barrierThickness, engine,carA_SVG);
+        //spawn the opponent cars at random places inside the parking bay(start zone)
+        spawnOpponentCars(numberOfOpponentCars);
+    }
+    
+    p.draw = ()=>
+    {
+        p.background(215,252,251);
+        Matter.Engine.update(engine)
+    
+        parkingBay.draw(p);
+        
+        guard.draw(p);
+
+        playerCar?.draw(p);
+        playerCar?.steering(p);
+        
+        opponentCars.forEach(car => {
+            car.draw(p);
+            car.steering(mode);
+        })
+
+    
+    }
+    
+    /*################################# interactions ###############################*/
+    p.mouseClicked = ()=>
+    {
+        if(p.keyIsDown(73) )
         {
-            spawnPlayerCar(lotIndex)
-            parkingBay.lotAvailablity[lotIndex] = false;
+            spawnPlayerCar(p.mouseX, p.mouseY);
         }
     }
+    
+    /*################################# functions ###################################*/
+    let spawnPlayerCar =(_x,_y)=>
+    {
+        if(!playerCar && !isOverlapped( _x, _y) && parkingBay.isInStartZone(_x,_y))
+        {
+            let carPosition = {x:_x,y:_y};
+            playerCar= new PlayerCar(carPosition, engine, playerCar_SVG);
+        }
+    }
+
+    //cheks if the given x and y for spawning the car has overlap with any other car
+    let isOverlapped =(_x,_y)=>
+    {
+        return false;
+    }
+    //inserts the opponent cars where there is no overlap with other cars
+    //Based on game mode provides start angle to opponents
+    let insertOpponentCar =(cartype)=>
+    {
+        let _x, _y;
+        while(true)
+        {
+            _x = p.random(60, p.width/5-60);
+            _y = p.random(60, p.height-60);
+
+            if(!isOverlapped(_x, _y))
+            {
+                break;
+            }
+        }
+        //sets the start angle to zero for mode 1 and random angle for mode 2 and 3
+        let startAngle = mode == 1 ? 0 : p.random(0,Math.PI*2);
+
+        if(cartype == "A")
+        {
+            opponentCars.push(new OpponentCarA({x:_x, y:_y}, engine, carA_SVG, opponentCars.length, startAngle))
+        }
+        else
+        {
+            opponentCars.push(new OpponentCarB({x:_x, y:_y}, engine, carB_SVG, opponentCars.length, startAngle))
+        }
+        
+    }
+    //spawn the opponent cars inside the start zone based on the provided number of cars
+    //It starts with filling the first half with carA and the fill the remaining with carB
+    let spawnOpponentCars = (numberOfOpponentCars)=>
+    {
+        for(let i = 0; i < numberOfOpponentCars/2; i++)
+        {
+            insertOpponentCar("A");
+        }
+        let availableNumber = numberOfOpponentCars - opponentCars.length;
+        for(let i = 0; i < availableNumber; i++)
+        {
+            insertOpponentCar("B");
+        }
+    }
+    /*#################################### Event Listeners ##############################################*/
+    Events.on(engine, 'collisionStart', (event)=> {
+        event.pairs.forEach(pair=>{
+            const {bodyA, bodyB} = pair;
+            if(bodyA?.parent.name == "barrier")
+            {
+                (bodyB.name=="opponentCar") && opponentCars[bodyB.carIndex].reverseHeading();
+            }
+            else if(bodyB?.parent.name == "barrier")
+            {
+                (bodyA.name=="opponentCar") && opponentCars[bodyA.carIndex].reverseHeading();
+            }
+        })
+    })
 }
+new p5(sketch);
 
 
-
-/*################################# functions ###################################*/
-function spawnPlayerCar(lotIndex)
-{
-    let carPosition = parkingBay.signaling(lotIndex)
-
-    playerCar= new Car(carPosition);
-}
-
-
+/**https://www.html5gamedevs.com/topic/39536-identify-objects-in-collisionstart/ for adding label
+ https://github.com/liabru/matter-js/issues/744 for parent
+ */
 
 

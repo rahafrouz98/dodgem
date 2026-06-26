@@ -1,82 +1,117 @@
-class Car
-{
-    constructor(_position)
-    {
-        this.#width = 50;
-        this.#length = 100;
-        this.#maxVelocity = 1;
+let {World, Bodies, Body} = Matter
 
-        this.accelerate = 0;
-        this.#carBody = Bodies.rectangle(_position.x, _position.y, this.#length, this.#width, {
+export default class Car
+{
+    /**This is a parent class which PlayerCar and two OpponentCar classes are extended from */
+    constructor(_position, _width, _length, _throttle ,_density, _engine, _svgImage,_type=""
+         ,_carIndex=0 ,_startDirection=0)
+    {
+        this.#width = _width;
+        this.#length = _length;
+        this.acceleration = 0;
+        this.#throttle = _throttle;
+        this.carBody = Bodies.rectangle(_position.x, _position.y, this.#length, this.#width, {
             isStatic:false,
             friction:0.3,
-            frictionAir:0.2,
+            frictionAir:0.1,
             restitution:.9,
             angle:0,
-            density:0.001,
+            density:_density,
         }) 
-        World.add(engine.world, [this.#carBody]) 
+        this.carBody.carIndex = _carIndex;
+        this.carBody.name= _type;
+        World.add(_engine.world, [this.carBody]) 
+        Body.setAngle(this.carBody, _startDirection)
+        this.svgImage = _svgImage;
     }
+    svgImage
+    carBody;
+    #throttle
     #width;
     #length;
-    #maxVelocity;
-    #carBody;
-    #accelerate = 0;
+    //It is needed to limit the amount of force on car so it does not act up in collision with
+    //barriers when the car keep throttling
+    #maxAcceleration = 0.1;
+    acceleration;
+    #maxVelocity =10;
    
-    draw()
+    draw(p)
     {
-        push();
-            translate(this.#carBody.position.x, this.#carBody.position.y);
-            rectMode(CENTER);
-            rotate(this.#carBody.angle);
-            fill(255,0,0);
-            rect(0, 0, this.#length, this.#width);
-        pop();
-        this.#update();
+        this.update();
+        p.push();
+            p.translate(this.carBody.position.x, this.carBody.position.y);
+            p.rotate(this.carBody.angle);
+            p.imageMode(p.CENTER);
+            p.image(this.svgImage, 0, 0, this.#length, this.#width);
+        p.pop();
     }
     
-    #update()
+    update()
     {
-        let direction = p5.Vector.fromAngle(this.#carBody.angle,1 );
-        let force = direction.mult(this.#accelerate,this.#accelerate);
-        Matter.Body.applyForce(this.#carBody, this.#carBody.position, force);
-        console.log(this.#accelerate);
-    }
-    
-    moveForward(isAccelerating) 
-    {
-        if(isAccelerating)
+        //direction before applying force
+        let direction1 = p5.Vector.fromAngle(this.carBody.angle);
+        let force = direction1.mult(this.acceleration);
+        Body.applyForce(this.carBody,this.carBody.position, force);
+        //limit the speed of the car
+
+        if(this.carBody.speed > this.#maxVelocity)
         {
-           this.#accelerate+=0.002 ;
+            //direction after applying force
+            let direction2 = p5.Vector.fromAngle(this.carBody.angle);
+            Body.setVelocity(this.carBody, direction2.mult(this.#maxVelocity))
+        }
+
+    }
+    
+   moveForward(isAccelerating)
+    {
+        if(isAccelerating && this.acceleration < this.#maxAcceleration)
+        {
+            this.acceleration += this.#throttle ;
+        }
+        else if (isAccelerating && this.acceleration >= this.#maxAcceleration)
+        {
+            this.acceleration=this.#maxAcceleration; 
         }
         else
         {
-            this.#accelerate=0; 
+            this.acceleration=0; 
         }
     }
 
-    moveBackward(isAccelerating) 
+    moveBackward(isAccelerating)
     {
-        if(isAccelerating)
+        if(isAccelerating && -this.acceleration < this.#maxAcceleration )
         {
-           this.#accelerate-=0.001 ;
+           this.acceleration -= this.#throttle/2 ;
+        }
+        else if (isAccelerating && -this.acceleration >= this.#maxAcceleration)
+        {
+             this.acceleration=-this.#maxAcceleration; 
         }
         else 
         {
-            this.#accelerate=0; 
+            this.acceleration=0; 
         }
     }
 
-    turnRight(isTurning)
+    turnRight = (isTurning)=>
     {
-        this.#carBody.angle += 0.01;
+        Body.setAngle(this.carBody, this.carBody.angle + 0.05);
     }
 
-    turnLeft(isTurning)
+    turnLeft = (isTurning)=>
     {
-        this.#carBody.angle -= 0.01;
+        Body.setAngle(this.carBody, this.carBody.angle - 0.05)
+    }
+
+    steering()
+    {
+       
     }
     
 }
 
-
+/**
+ https://freesvg.org/top-view-car-vector for cars svg
+ */

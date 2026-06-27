@@ -9,7 +9,7 @@ export default class ParkingBay
         this.#bayHeight = _height;
         this.#x = _x;
         this.#y = _y;
-        //items will be true when the correspondent lot is available
+
     }
     #bayWidth;
     #bayHeight;
@@ -21,11 +21,14 @@ export default class ParkingBay
             p.noStroke();
             p.fill(189,250,248);
             p.rect(this.#x, this.#y, this.#bayWidth, this.#bayHeight);
-            p.stroke(255)
+            p.stroke(0,0,200)
+            p.strokeWeight(1)
+            p.fill(255)
+            p.translate(this.#bayWidth/2 + this.#x, this.#bayHeight/2 + this.#y)
             p.rotate(Math.PI/2);
             p.textAlign(p.CENTER, p.CENTER);
-            p.translate(this.#bayWidth/2 + this.#x, this.#bayHeight)
-            p.text("Start  Zone")
+            p.textSize(this.#bayWidth/4)
+            p.text("Start  Zone" ,0, 0)
         p.pop();
     }
     //checks if the x and y coordinate is inside the parking bay

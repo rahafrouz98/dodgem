@@ -13,7 +13,7 @@ export default class Car
         this.carBody = Bodies.rectangle(_position.x, _position.y, this.#length, this.#width, {
             isStatic:false,
             friction:0.3,
-            frictionAir:0.1,
+            frictionAir:0.18,
             restitution:.9,
             angle:0,
             density:_density,
@@ -33,7 +33,8 @@ export default class Car
     //barriers when the car keep throttling
     #maxAcceleration = 0.1;
     acceleration;
-    #maxVelocity =10;
+    #maxVelocity =20;
+    turningIncrement = 0.03;
    
     draw(p)
     {
@@ -97,12 +98,12 @@ export default class Car
 
     turnRight = (isTurning)=>
     {
-        Body.setAngle(this.carBody, this.carBody.angle + 0.05);
+        Body.setAngle(this.carBody, this.carBody.angle + this.turningIncrement);
     }
 
     turnLeft = (isTurning)=>
     {
-        Body.setAngle(this.carBody, this.carBody.angle - 0.05)
+        Body.setAngle(this.carBody, this.carBody.angle - this.turningIncrement)
     }
 
     steering()

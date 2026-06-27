@@ -52,7 +52,8 @@ export default class Guard
 
         p.push()
             p.rectMode(p.CENTER);
-            p.fill(0,0,255)
+            p.noStroke()
+            p.fill(22,100,255)
             //pole top-left
             p.rect(this.#poleTL.position.x, this.#poleTL.position.y, this.#thickness*4 , this.#thickness*4);
             //pole top-right

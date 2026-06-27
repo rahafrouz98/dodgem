@@ -13,17 +13,101 @@ export default class OpponentCar extends Car
 
     //set a random direction of the opponent car
     #isMovingForward
+    //this object is used to keep the status of 90 degree turning for the car
+    //staus 0 means it is not active, 1 means it is turning right, -1 means it is turning left
+    //initial angle is the angle of the car that it start to turning 90 degree
+    #turn90 ={
+        status:0,
+        initialAngle:undefined
+    }
+    //this object is used to keep the status of trajectory path for the car
+    //time is the parameter which is used in the sine formula to simulate time
+    #trajictoryPath = {
+        isActive:false,
+        baseLineAngle:undefined,
+        time:0,
+        frequency:5,
+        timeFragment:undefined
+    }
+    //activate and deactivate trajectory path
+    #toggleTrajictoryPath()
+    {
+        this.#trajictoryPath.isActive = !this.#trajictoryPath.isActive;
+        this.#trajictoryPath.time = 0;
+        this.#trajictoryPath.baseLineAngle = this.carBody.angle;
+        this.#trajictoryPath.timeFragment = .005+(1-Math.random()*2)/1000;
+    }
+    //It activate and deactivate the action of turning 90 degree
+    #toggleTurn90()
+    {
+        if(this.#turn90.status != 0 )
+        {
+            this.#turn90.status=0;
+        }
+        else
+        {
+            let isTurnRight = Math.random() < 0.5 ? true : false;
+            this.#turn90.status = isTurnRight? 1:-1;
+        }
+        initialAngle:this.carBody.angle
+    }
+
     steering(mode)
     {
-        if(mode == 2)
-        {
-            this.#isMovingForward ?this.moveForward(true):this.moveBackward(true);
-        }   
+        //the car will move forward or backward 
+        (mode == 2 || mode == 3) && this.#isMovingForward ?this.moveForward(true):this.moveBackward(true);
+        this.manageTurn90();
+
+        //the car will move on the trajectory path based on the parameters of the this.##trajictoryPath
+        mode ==3 && this.sineMovement();
+
+        //car will turn 90 degree to left or right based on the status of this.#turn90
+        this.manageTurn90()
     }  
+
     reverseHeading()
     {  
         this.acceleration=0
         Body.setVelocity(this.carBody, {x:0,y:0})
         this.#isMovingForward = !this.#isMovingForward;
+    }
+
+    setTurn90()
+    {
+        this.#toggleTurn90();
+        this.#toggleTrajictoryPath();
+    }  
+
+    manageTurn90()
+    {
+        if(this.#turn90.status != 0)
+        {
+            let targetAngle = this.#turn90.initialAngle + (Math.PI/2)*this.#turn90.status;
+            if(this.carBody.angle < targetAngle && this.#turn90.status > 0 || this.carBody.angle > targetAngle && this.#turn90.status < 0)
+            {
+                this.#turn90.status==-1 ? this.turnLeft(true) : this.turnRight(true);
+            }
+            else
+            {
+                this.#toggleTurn90();
+            }
+        }
+    }
+
+    sineMovement()
+    {
+        if(this.#turn90.status==0)
+        {
+            if(!this.#trajictoryPath.isActive)
+            {
+                console.log("yes")
+                this.#toggleTrajictoryPath();
+            }
+            //this is a sine wave formula for the angle of the car to make the car move in a sine trajectory path
+            //the amplitude is equal to pi/4 (45 degree) and the baseline for the angle is the angle of car at start of the trejectory
+            let newAngle = Math.PI/4*Math.sin(this.#trajictoryPath.time*this.#trajictoryPath.frequency);
+            Body.setAngle(this.carBody, this.#trajictoryPath.baseLineAngle + newAngle);
+            this.#trajictoryPath.time+=this.#trajictoryPath.timeFragment;
+        }
     }
 }

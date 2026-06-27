@@ -5,7 +5,7 @@ export default class PlayerCar extends Car
     //It is a class for the PlayerCar
     constructor(_position, engine,svgImage)
     {
-        super(_position, 55, 110, .0002 , 0.001, engine, svgImage, "playerCar")
+        super(_position, 60, 120, .0002 , 0.0009, engine, svgImage, "playerCar")
     }
     //it takes p as the instance of p5
     steering(p)

@@ -22,7 +22,7 @@ const sketch = (p)=>
     let playerCar_SVG;
     let opponentCars=[]
     let numberOfOpponentCars = 4;
-    let mode = 2;
+    let mode = 3;
 
     p.preload = ()=>
     {
@@ -132,14 +132,33 @@ const sketch = (p)=>
     Events.on(engine, 'collisionStart', (event)=> {
         event.pairs.forEach(pair=>{
             const {bodyA, bodyB} = pair;
+            //barrier collision
             if(bodyA?.parent.name == "barrier")
             {
                 (bodyB.name=="opponentCar") && opponentCars[bodyB.carIndex].reverseHeading();
             }
+            //barrier collision
             else if(bodyB?.parent.name == "barrier")
             {
                 (bodyA.name=="opponentCar") && opponentCars[bodyA.carIndex].reverseHeading();
             }
+            //cars collision
+            else if(bodyA.name == "opponentCar" || bodyB.name == "opponentCar")
+            {
+                //randomly decides both cars turn 90 degree or just on car turns 90 degree
+                //with 0 only one opponent car turns and 1 both opponent cars (if applicable) turns
+                let selector = Math.random() <0.5 ? 0 : 1;
+                if(selector == 1)
+                {
+                    opponentCars[bodyA.carIndex]?.setTurn90();
+                    opponentCars[bodyB.carIndex]?.setTurn90();
+                }
+                else
+                {
+                   opponentCars[bodyA.carIndex]?.setTurn90(); 
+                }
+            }
+
         })
     })
 }

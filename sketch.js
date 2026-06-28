@@ -3,6 +3,7 @@ import ParkingBay from "./ParkingBay.js"
 import Guard from "./Guard.js"
 import OpponentCarA from "./OpponentCarA.js"
 import OpponentCarB from "./OpponentCarB.js"
+import {collisionManeuver} from "./eventCallBacks.js"
 
 let {Engine, Events} = Matter
 
@@ -17,7 +18,7 @@ const sketch = (p)=>
     let arenaWidth;
     let arenaHeight;
     let guard;
-    let carA_SVG;
+    let carA_SVG; 
     let carB_SVG
     let playerCar_SVG;
     let opponentCars=[]
@@ -140,37 +141,8 @@ const sketch = (p)=>
         }
     }
     /*#################################### Event Listeners ##############################################*/
-    Events.on(engine, 'collisionStart', (event)=> {
-        event.pairs.forEach(pair=>{
-            const {bodyA, bodyB} = pair;
-            //barrier collision
-            if(bodyA?.parent.name == "barrier")
-            {
-                (bodyB.name=="opponentCar") && opponentCars[bodyB.carIndex].reverseHeading();
-            }
-            //barrier collision
-            else if(bodyB?.parent.name == "barrier")
-            {
-                (bodyA.name=="opponentCar") && opponentCars[bodyA.carIndex].reverseHeading();
-            }
-            //cars collision
-            else if(bodyA.name == "opponentCar" || bodyB.name == "opponentCar")
-            {
-                //randomly decides both cars turn 90 degree or just on car turns 90 degree
-                //with 0 only one opponent car turns and 1 both opponent cars (if applicable) turns
-                let selector = Math.random() <0.5 ? 0 : 1;
-                if(selector == 1)
-                {
-                    opponentCars[bodyA.carIndex]?.setOnTurn90();
-                    opponentCars[bodyB.carIndex]?.setOnTurn90();
-                }
-                else
-                {
-                   opponentCars[bodyA.carIndex]?.setOnTurn90(); 
-                }
-            }
-        })
-    })
+    Events.on(engine, 'collisionStart', (event)=>collisionManeuver(event,opponentCars));
+    //Events.on(engine, 'collisionActive', (event)=>collisionManeuver(event,opponentCars));
 }
 new p5(sketch);
 

@@ -12,7 +12,7 @@ export default class OpponentCar extends Car
     }
 
     //set a random direction of the opponent car
-    #isMovingForward
+    #isMovingForward = true;
     //this object is used to keep the status of 90 degree turning for the car
     //staus 0 means it is not active, 1 means it is turning right, -1 means it is turning left
     //initial angle is the angle of the car that it start to turning 90 degree
@@ -27,7 +27,8 @@ export default class OpponentCar extends Car
         isActive:false,
         baseLineAngle:undefined,
         time:0,
-        frequency:5,
+        frequency:6,
+        amplitude:Math.PI/15,
         timeFragment:undefined,
         phase: undefined,
     }
@@ -83,22 +84,28 @@ export default class OpponentCar extends Car
 
     manageTurn90()
     {
-        if(this.#turn90.status != 0)
+        if(this.#turn90.status !== 0)
         {
-            let targetAngle = this.#turn90.initialAngle + (Math.PI/2)*this.#turn90.status;
+            //this is used to count the moving forward and backward of car into calculation. Whithout this
+            //car will keep truning infinitly when it is backwarding and turn90 happens
+            let backwardCofficient = this.#isMovingForward? 1 :-1;
+            console.log(backwardCofficient)
+            let targetAngle = this.#turn90.initialAngle + (Math.PI/2) * this.#turn90.status*backwardCofficient;
+            console.log(this.#turn90.status + " , " +this.carBody.angle + " , " + this.#turn90.initialAngle + " , " + targetAngle);
             //check if the turn90 is on and the action of turning is completed turn it of
             if(this.carBody.angle > targetAngle && this.#turn90.status == 1 || this.carBody.angle < targetAngle && this.#turn90.status == -1)
             {
                 this.#turn90.status = 0;
             }
             //update the wheel status based on the status of turn90 object
-            this.setWheelsStatus(this.#turn90.status); 
+            console.log(this.#turn90.status)
+            this.turnWheels(0.02*this.#turn90.status); 
         }
     }
 
     sineMovement()
     {
-        if(this.#turn90.status==0 )
+        if(this.#turn90.status===0 )
         {
             if(!this.#trajictoryPath.isActive)
             {
@@ -106,8 +113,9 @@ export default class OpponentCar extends Car
             }
             //this is a sine wave formula for the angle of the car to make the car move in a sine trajectory path
             //the amplitude is equal to pi/4 (45 degree) and the baseline for the angle is the angle of car at start of the trejectory
-            let newAngle = Math.PI/4*Math.sin(this.#trajictoryPath.time*this.#trajictoryPath.frequency +this.#trajictoryPath.phase);
-            Body.setAngle(this.carBody, this.#trajictoryPath.baseLineAngle + newAngle);
+            let wheelAngleTarget = this.#trajictoryPath.amplitude*Math.sin(this.#trajictoryPath.time*this.#trajictoryPath.frequency +this.#trajictoryPath.phase);
+            let incrementAngle = wheelAngleTarget-this.wheels.angle;
+            this.turnWheels(incrementAngle);
             this.#trajictoryPath.time+=this.#trajictoryPath.timeFragment;
         }
     }

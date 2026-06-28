@@ -13,8 +13,8 @@ export default class Car
         this.carBody = Bodies.rectangle(_position.x, _position.y, this.#length, this.#width, {
             isStatic:false,
             friction:0.3,
-            frictionAir:0.2,
-            restitution:.9,
+            frictionAir:0.3,
+            restitution:1,
             angle:0,
             density:_density,
         }) 
@@ -31,14 +31,14 @@ export default class Car
     #length;
     //It is needed to limit the amount of force on car so it does not act up in collision with
     //barriers when the car keep throttling
-    #maxAcceleration = 0.10;
+    #maxAcceleration = 0.05;
     acceleration;
     #maxVelocity =25;
-    #wheels={
-        status:0,
-        angularVelocity:0,
-        maxAngularVelocity:0.05, //absolute value
-        increment:0.01,
+    wheels={
+        increment:0,
+        angle:0,
+        maxAngle: Math.PI/4, // absolute
+        decrement:0.3
     }
    
     draw(p)
@@ -54,11 +54,11 @@ export default class Car
     
     update()
     {
-        //update car angle
+        //update wheel angle
         this.#wheelManager()
 
         //normal vector from the wheel direction
-        let forceDirection = p5.Vector.fromAngle(this.carBody.angle);
+        let forceDirection = p5.Vector.fromAngle(this.carBody.angle+this.wheels.angle);
         let force = p5.Vector.mult(forceDirection,this.acceleration);
         //it applies the force infront of the car to simulate front wheel drive
         let forceOffsetX = this.#length/3*2 * Math.cos(this.carBody.angle);
@@ -109,37 +109,45 @@ export default class Car
             this.acceleration=0; 
         }
     }
-    //if this.#wheels.status is -1 decrease the wheel angle to minimum -45
-    //if this.#wheels.status is 1 increase the wheel angle to maximum 45
-    //if this.#wheels.status is 0 it decrease or increase the wheel angle to 0
+
+
     #wheelManager()
     {
-        if (this.#wheels.status == 1 || this.#wheels.status == -1 )
+        if(this.wheels.increment !==0)
         {
-            //new angular velocity
-            let newAv = this.#wheels.angularVelocity +this.#wheels.increment * this.#wheels.status;
-            //if new angular velocity will be maximum equal to this.#wheels.maxAngularVelocity
-            if(this.#wheels.status == 1)
+            let newAngle = this.wheels.angle +this.wheels.increment;
+            //new wheel angle will be maximum equal to the this.#wheels.maxAngle
+            if(newAngle > 0)
             {
-                newAv = Math.min(newAv, this.#wheels.maxAngularVelocity)
+                newAngle = Math.min(newAngle, this.wheels.maxAngle)
             }
-            else if(this.#wheels.status == -1)
+            else if(newAngle < 0)
             {
-                newAv = Math.max(newAv, -this.#wheels.maxAngularVelocity)
+                newAngle = Math.max(newAngle, -this.wheels.maxAngle)
             }
-            this.#wheels.angularVelocity = newAv
-            Body.setAngularVelocity(this.carBody, newAv);
+            this.wheels.angle= newAngle
         }
+        //if status is 0 turn the wheels to 0 degree gradually
         else
         {
-             Body.setAngularVelocity(this.carBody, 0);
+            //if the wheel angle is less than the decrement then set the angle to 0 to prevent it from keeping passing zero
+            if(Math.abs(this.wheels.angle) <= this.wheels.decrement)
+            {
+                this.wheels.angle = 0;
+            }
+            else
+            {
+
+                this.wheels.angle > 0 ? this.wheels.angle-=this.wheels.decrement:
+                this.wheels.angle+=this.wheels.decrement;
+            } 
         }
 
     }
-    //it is an interface method that is usewd in the child classes to change the status of wheels for turning right and left
-    setWheelsStatus(input)
+    /**it is an interface method that is used in the child classes to change the status of wheels for turning right and left*/
+    turnWheels(increment)
     {
-        this.#wheels.status = input;
+        this.wheels.increment = increment;
     }
 
     

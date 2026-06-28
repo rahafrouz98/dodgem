@@ -28,12 +28,17 @@ export default class PlayerCar extends Car
         //right arrow
         if(p.keyIsDown(39) && (p.keyIsDown(40) || p.keyIsDown(38)))
         {
-            this.turnRight(true);
+            this.setWheelsStatus(1);
         }
         //left arrow 
         else if(p.keyIsDown(37) && (p.keyIsDown(40) || p.keyIsDown(38)))
         {
-            this.turnLeft(true);
+            this.setWheelsStatus(-1);
+        }
+        //move straight
+        else
+        {
+            this.setWheelsStatus(0);
         }
     }  
 }

@@ -13,7 +13,7 @@ export default class Car
         this.carBody = Bodies.rectangle(_position.x, _position.y, this.#length, this.#width, {
             isStatic:false,
             friction:0.3,
-            frictionAir:0.18,
+            frictionAir:0.2,
             restitution:.9,
             angle:0,
             density:_density,
@@ -31,10 +31,15 @@ export default class Car
     #length;
     //It is needed to limit the amount of force on car so it does not act up in collision with
     //barriers when the car keep throttling
-    #maxAcceleration = 0.1;
+    #maxAcceleration = 0.10;
     acceleration;
-    #maxVelocity =20;
-    turningIncrement = 0.03;
+    #maxVelocity =25;
+    #wheels={
+        status:0,
+        angularVelocity:0,
+        maxAngularVelocity:0.05, //absolute value
+        increment:0.01,
+    }
    
     draw(p)
     {
@@ -49,17 +54,26 @@ export default class Car
     
     update()
     {
-        //direction before applying force
-        let direction1 = p5.Vector.fromAngle(this.carBody.angle);
-        let force = direction1.mult(this.acceleration);
-        Body.applyForce(this.carBody,this.carBody.position, force);
-        //limit the speed of the car
+        //update car angle
+        this.#wheelManager()
 
+        //normal vector from the wheel direction
+        let forceDirection = p5.Vector.fromAngle(this.carBody.angle);
+        let force = p5.Vector.mult(forceDirection,this.acceleration);
+        //it applies the force infront of the car to simulate front wheel drive
+        let forceOffsetX = this.#length/3*2 * Math.cos(this.carBody.angle);
+        let forceOffsetY = this.#length/3*2 * Math.sin(this.carBody.angle);
+        let forcePosition= {x:this.carBody.position.x+forceOffsetX , y:this.carBody.position.y+forceOffsetY}
+
+        Body.applyForce(this.carBody,forcePosition, force);
+        
+        //limit the speed of the car
         if(this.carBody.speed > this.#maxVelocity)
         {
             //direction after applying force
-            let direction2 = p5.Vector.fromAngle(this.carBody.angle);
-            Body.setVelocity(this.carBody, direction2.mult(this.#maxVelocity))
+            let direction = p5.Vector.fromAngle(this.carBody.angle);
+            let newVelocity = p5.Vector.mult(direction, this.#maxVelocity)
+            Body.setVelocity(this.carBody, newVelocity)
         }
 
     }
@@ -95,21 +109,39 @@ export default class Car
             this.acceleration=0; 
         }
     }
-
-    turnRight = (isTurning)=>
+    //if this.#wheels.status is -1 decrease the wheel angle to minimum -45
+    //if this.#wheels.status is 1 increase the wheel angle to maximum 45
+    //if this.#wheels.status is 0 it decrease or increase the wheel angle to 0
+    #wheelManager()
     {
-        Body.setAngle(this.carBody, this.carBody.angle + this.turningIncrement);
+        if (this.#wheels.status == 1 || this.#wheels.status == -1 )
+        {
+            //new angular velocity
+            let newAv = this.#wheels.angularVelocity +this.#wheels.increment * this.#wheels.status;
+            //if new angular velocity will be maximum equal to this.#wheels.maxAngularVelocity
+            if(this.#wheels.status == 1)
+            {
+                newAv = Math.min(newAv, this.#wheels.maxAngularVelocity)
+            }
+            else if(this.#wheels.status == -1)
+            {
+                newAv = Math.max(newAv, -this.#wheels.maxAngularVelocity)
+            }
+            this.#wheels.angularVelocity = newAv
+            Body.setAngularVelocity(this.carBody, newAv);
+        }
+        else
+        {
+             Body.setAngularVelocity(this.carBody, 0);
+        }
+
+    }
+    //it is an interface method that is usewd in the child classes to change the status of wheels for turning right and left
+    setWheelsStatus(input)
+    {
+        this.#wheels.status = input;
     }
 
-    turnLeft = (isTurning)=>
-    {
-        Body.setAngle(this.carBody, this.carBody.angle - this.turningIncrement)
-    }
-
-    steering()
-    {
-       
-    }
     
 }
 

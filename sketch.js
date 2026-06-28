@@ -21,7 +21,7 @@ const sketch = (p)=>
     let carB_SVG
     let playerCar_SVG;
     let opponentCars=[]
-    let numberOfOpponentCars = 4;
+    let numberOfOpponentCars =  4;
     let mode = 3;
 
     p.preload = ()=>
@@ -74,6 +74,7 @@ const sketch = (p)=>
     /*################################# functions ###################################*/
     let spawnPlayerCar =(_x,_y)=>
     {
+        //if there is no overlap with other existing cars and it is not already existing and the mouse is inside start zone
         if(!playerCar && !isOverlapped( _x, _y) && parkingBay.isInStartZone(_x,_y))
         {
             let carPosition = {x:_x,y:_y};
@@ -84,6 +85,16 @@ const sketch = (p)=>
     //cheks if the given x and y for spawning the car has overlap with any other car
     let isOverlapped =(_x,_y)=>
     {
+        //list of bodies pressented at the point (_x,_y)
+        let point = {x:_x, y:_y};
+        let carBodies =[];
+        //if playerCar exists add to the list
+        playerCar && carBodies.push(playerCar.carBody);
+        //add the opponent cars' boddies to the list 
+        opponentCars.forEach(car => carBodies.push(car.carBody));
+
+        let collidedBodiesList = Matter.Query.point(carBodies, point)
+        if(collidedBodiesList.length != 0) return true;
         return false;
     }
     //inserts the opponent cars where there is no overlap with other cars
@@ -150,15 +161,14 @@ const sketch = (p)=>
                 let selector = Math.random() <0.5 ? 0 : 1;
                 if(selector == 1)
                 {
-                    opponentCars[bodyA.carIndex]?.setTurn90();
-                    opponentCars[bodyB.carIndex]?.setTurn90();
+                    opponentCars[bodyA.carIndex]?.setOnTurn90();
+                    opponentCars[bodyB.carIndex]?.setOnTurn90();
                 }
                 else
                 {
-                   opponentCars[bodyA.carIndex]?.setTurn90(); 
+                   opponentCars[bodyA.carIndex]?.setOnTurn90(); 
                 }
             }
-
         })
     })
 }

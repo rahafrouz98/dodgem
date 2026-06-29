@@ -19,8 +19,8 @@ const sketch = (p)=>
     let arenaHeight;
     let guard;
     let opponentCars=[]
-    let numberOfOpponentCars =  2;
-    let mode =1;
+    let numberOfOpponentCars =  1;
+    let mode =3;
 
     p.setup = ()=>
     {
@@ -58,23 +58,23 @@ const sketch = (p)=>
     {
         if(p.keyIsDown(73) )
         {
-            spawnPlayerCar(p.mouseX, p.mouseY);
+            spawnPlayerCar(p.mouseX, p.mouseY, 60,120);
         }
     }
     
     /*################################# functions ###################################*/
-    let spawnPlayerCar =(_x,_y)=>
+    let spawnPlayerCar =(_x,_y, carLength, carWidth)=>
     {
         //if there is no overlap with other existing cars and it is not already existing and the mouse is inside start zone
-        if(!playerCar && !isOverlapped( _x, _y) && parkingBay.isInStartZone(_x,_y))
+        if(!playerCar && !isOverlapped( _x, _y, carLength) && parkingBay.isInStartZone(_x,_y))
         {
             let carPosition = {x:_x,y:_y};
-            playerCar= new PlayerCar(carPosition, engine);
+            playerCar= new PlayerCar(carPosition, carLength, carWidth , engine);
         }
     }
 
-    //cheks if the given x and y for spawning the car has overlap with any other car
-    let isOverlapped =(_x,_y)=>
+    //cheks if the an area of length equal to _carLength and at given x and y has any car in it
+    let isOverlapped =(_x,_y, _carLength)=>
     {
         //list of bodies pressented at the point (_x,_y)
         let point = {x:_x, y:_y};
@@ -83,14 +83,18 @@ const sketch = (p)=>
         playerCar && carBodies.push(playerCar.carBody.physic);
         //add the matterjs bodies of opponent cars'  to the list 
         opponentCars.forEach(car => carBodies.push(car.carBody.physic));
-
-        let collidedBodiesList = Matter.Query.point(carBodies, point)
+        let bounds = Matter.Bounds.create([{x:_x+ _carLength, y: _y+ _carLength}, 
+                                           {x:_x+ _carLength, y: _y- _carLength},
+                                           {x:_x- _carLength, y: _y- _carLength},
+                                           {x:_x- _carLength, y: _y+ _carLength}
+                                        ])
+        let collidedBodiesList = Matter.Query.region(carBodies, bounds)
         if(collidedBodiesList.length != 0) return true;
         return false;
     }
     //inserts the opponent cars where there is no overlap with other cars
     //Based on game mode provides start angle to opponents
-    let insertOpponentCar =(cartype)=>
+    let insertOpponentCar =(cartype, carLength, carWidth)=>
     {
         let _x, _y;
         while(true)
@@ -98,7 +102,7 @@ const sketch = (p)=>
             _x = p.random(60, p.width/5-60);
             _y = p.random(60, p.height-60);
 
-            if(!isOverlapped(_x, _y))
+            if(!isOverlapped(_x, _y, carLength))
             {
                 break;
             }
@@ -108,11 +112,11 @@ const sketch = (p)=>
 
         if(cartype == "A")
         {
-            opponentCars.push(new OpponentCarA({x:_x, y:_y}, engine, opponentCars.length, startAngle))
+            opponentCars.push(new OpponentCarA({x:_x, y:_y}, carLength, carWidth ,engine, opponentCars.length, startAngle))
         }
         else
         {
-            opponentCars.push(new OpponentCarB({x:_x, y:_y}, engine, opponentCars.length, startAngle))
+            opponentCars.push(new OpponentCarB({x:_x, y:_y}, carLength, carWidth ,engine, opponentCars.length, startAngle))
         }
         
     }
@@ -122,12 +126,12 @@ const sketch = (p)=>
     {
         for(let i = 0; i < numberOfOpponentCars/2; i++)
         {
-            insertOpponentCar("A");
+            insertOpponentCar("A", 60, 120);
         }
         let availableNumber = numberOfOpponentCars - opponentCars.length;
         for(let i = 0; i < availableNumber; i++)
         {
-            insertOpponentCar("B");
+            insertOpponentCar("B", 60,120);
         }
     }
     /*#################################### Event Listeners ##############################################*/
@@ -139,6 +143,7 @@ new p5(sketch);
 
 /**https://www.html5gamedevs.com/topic/39536-identify-objects-in-collisionstart/ for adding label
  https://github.com/liabru/matter-js/issues/744 for parent
+ https://stackoverflow.com/questions/70624648/matter-query-region-not-returning-any-collisions-even-though-the-bound-is-clearl for query.region
  */
 
 

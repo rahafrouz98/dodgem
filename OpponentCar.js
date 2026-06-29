@@ -4,10 +4,12 @@ let {Body} = Matter
 
 export default class OpponentCar extends Car
 {
-    //This is a parrent class for opponent cars. It inherits from Cars and add a specific method of steering for opponent cars
-    constructor(_position, _width, _length, _throttle ,_density, _engine, _color, _name="",_carIndex =0, _startDirection=0)
+    /**This is a parrent class for opponent cars. It inherits from Cars and add a specific method of steering for opponent cars
+    *_engine is the instance of Matter.Engine 
+    */
+    constructor(_position, _width, _length, _throttle ,_density, _engine, _color, _name ="" , _smoker = false, _carIndex =0, _startDirection=0)
     {      
-        super(_position, _width,_length, _throttle , _density, _engine, _color,_name,_carIndex ,_startDirection, false);
+        super(_position, _width,_length, _throttle , _density, _engine, _color,_name, _smoker ,_carIndex ,_startDirection);
         this.#isMovingForward= Math.random() < 0.5 ? true : false;
     }
 

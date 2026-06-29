@@ -7,6 +7,8 @@ export let collisionInstanteManeuver = (event,opponentCars)=> {
             const {bodyA, bodyB} = pair;
             /*############################# barrier collision #########################################*/
             //only the barrier component have parent as they are assembled as a single component
+            if(bodyA.name == "opponentCar") console.log(bodyA.carIndex)
+            if(bodyB.name == "opponentCar") console.log(bodyB.carIndex)
             if(bodyA?.parent.name == "barrier" && bodyB.name=="opponentCar")
             {
                 opponentCars[bodyB.carIndex].toggleHeading();

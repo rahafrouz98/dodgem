@@ -12,7 +12,7 @@ export default class CarBody
         this.#isHoodPeaked = _isHoodPeaked;
         
 
-        this.physic = Bodies.fromVertices(_position.x, _position.y, this.generateVertices(_length, _width) ,{
+        this.physic = Bodies.fromVertices(_position.x, _position.y, this.#generateVertices(_length, _width) ,{
                 isStatic:false,
                 friction:0.3,
                 frictionAir:0.3,
@@ -50,7 +50,7 @@ export default class CarBody
     }
 
     /**it generates the vertices  of the shape */
-    generateVertices(length, width, isHoodPeaked=true)
+    #generateVertices(length, width, isHoodPeaked=true)
     {
         let hoodPeak = isHoodPeaked ? width/7 : 0
         let fenderWidth = length/50;
@@ -111,7 +111,7 @@ export default class CarBody
 
     #drawBody(p, x, y)
     {
-        let vertices = this.generateVertices(this.#length, this.#width, this.#isHoodPeaked)
+        let vertices = this.#generateVertices(this.#length, this.#width, this.#isHoodPeaked)
         p.push();
             p.fill(this.#color[0], this.#color[1], this.#color[2]);
             p.beginShape();
@@ -130,7 +130,7 @@ export default class CarBody
         let carWidth = this.#width;
         p.push();
             p.blendMode(p.MULTIPLY)
-            p.fill(230,230,230);
+            p.fill(200,200,200);
             p.beginShape();
             p.vertex(windowPoints[0].x, windowPoints[0].y);
             p.vertex(windowPoints[1].x, windowPoints[1].y);

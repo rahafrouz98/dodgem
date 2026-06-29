@@ -5,14 +5,14 @@ let {Body} = Matter
 export default class OpponentCar extends Car
 {
     //This is a parrent class for opponent cars. It inherits from Cars and add a specific method of steering for opponent cars
-    constructor(_position, _width, _length, _throttle ,_density, _engine, _svgImage, _type="",_carIndex =0, _startDirection=0)
-    {     
-        super(_position, _width,_length, _throttle , _density, _engine, _svgImage, _type,_carIndex ,_startDirection);
+    constructor(_position, _width, _length, _throttle ,_density, _engine, _color, _name="",_carIndex =0, _startDirection=0)
+    {      
+        super(_position, _width,_length, _throttle , _density, _engine, _color,_name,_carIndex ,_startDirection, false);
         this.#isMovingForward= Math.random() < 0.5 ? true : false;
     }
 
     //set a random direction of the opponent car
-    #isMovingForward = true;
+    #isMovingForward = Math.random() < 0.5? true: false;
     //this object is used to keep the status of 90 degree turning for the car
     //staus 0 means it is not active, 1 means it is turning right, -1 means it is turning left
     //initial angle is the angle of the car that it start to turning 90 degree
@@ -37,7 +37,7 @@ export default class OpponentCar extends Car
     {
         this.#trajictoryPath.isActive = true;
         this.#trajictoryPath.time = 0;
-        this.#trajictoryPath.baseLineAngle = this.carBody.angle;
+        this.#trajictoryPath.baseLineAngle = this.carBody.physic.angle;
         this.#trajictoryPath.timeFragment = .005;
         let phaseSelector = Math.random() <0.5?0:1
         this.#trajictoryPath.phase = phaseSelector==0 ? 0 : Math.PI;
@@ -48,8 +48,7 @@ export default class OpponentCar extends Car
         //randomly set turn90 status to turn right(1) or left(-1)
         let isTurnRight = Math.random() < 0.5 ? true : false;
         this.#turn90.status = isTurnRight? 1:-1;
-        
-        this.#turn90.initialAngle=this.carBody.angle;
+        this.#turn90.initialAngle=this.carBody.physic.angle;
     }
 
     steering(mode)
@@ -66,14 +65,13 @@ export default class OpponentCar extends Car
 
         //car will turn 90 degree to left or right based on the status of this.#turn90
     }  
-
-    reverseHeading()
+    /**Toggle the car froom moving forward to backward */
+    toggleHeading()
     {  
         this.acceleration=0
         this.#isMovingForward = !this.#isMovingForward;
         //it resets the trajectory path with new phase to prevent cars from being stuck and keep hitting barriers
         this.#resetTrajictoryPath();
-
     }
 
     setOnTurn90()
@@ -89,16 +87,13 @@ export default class OpponentCar extends Car
             //this is used to count the moving forward and backward of car into calculation. Whithout this
             //car will keep truning infinitly when it is backwarding and turn90 happens
             let backwardCofficient = this.#isMovingForward? 1 :-1;
-            console.log(backwardCofficient)
             let targetAngle = this.#turn90.initialAngle + (Math.PI/2) * this.#turn90.status*backwardCofficient;
-            console.log(this.#turn90.status + " , " +this.carBody.angle + " , " + this.#turn90.initialAngle + " , " + targetAngle);
             //check if the turn90 is on and the action of turning is completed turn it of
-            if(this.carBody.angle > targetAngle && this.#turn90.status == 1 || this.carBody.angle < targetAngle && this.#turn90.status == -1)
+            if(this.carBody.physic.angle > targetAngle && this.#turn90.status == 1 || this.carBody.physic.angle < targetAngle && this.#turn90.status == -1)
             {
                 this.#turn90.status = 0;
             }
             //update the wheel status based on the status of turn90 object
-            console.log(this.#turn90.status)
             this.turnWheels(0.02*this.#turn90.status); 
         }
     }

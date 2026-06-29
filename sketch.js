@@ -3,7 +3,7 @@ import ParkingBay from "./ParkingBay.js"
 import Guard from "./Guard.js"
 import OpponentCarA from "./OpponentCarA.js"
 import OpponentCarB from "./OpponentCarB.js"
-import {collisionManeuver} from "./eventCallBacks.js"
+import {collisionActiveManeuver,collisionInstanteManeuver} from "./eventCallBacks.js"
 
 let {Engine, Events} = Matter
 
@@ -18,19 +18,9 @@ const sketch = (p)=>
     let arenaWidth;
     let arenaHeight;
     let guard;
-    let carA_SVG; 
-    let carB_SVG
-    let playerCar_SVG;
     let opponentCars=[]
-    let numberOfOpponentCars =  4;
-    let mode = 3;
-
-    p.preload = ()=>
-    {
-        carA_SVG = p.loadImage("./assets/carA.svg");
-        carB_SVG = p.loadImage("./assets/carB.svg")
-        playerCar_SVG = p.loadImage("./assets/playerCar.svg");
-    }
+    let numberOfOpponentCars =  2;
+    let mode =1;
 
     p.setup = ()=>
     {
@@ -38,7 +28,7 @@ const sketch = (p)=>
         let barrierThickness = 10;
         parkingBay = new ParkingBay( barrierThickness, barrierThickness,
                                     p.width/5, p.height-(barrierThickness*2), engine);
-        guard = new Guard(25,25, 1375,675, barrierThickness, engine,carA_SVG);
+        guard = new Guard(25,25, 1375,675, barrierThickness, engine);
         //spawn the opponent cars at random places inside the parking bay(start zone)
         spawnOpponentCars(numberOfOpponentCars);
     }
@@ -79,7 +69,7 @@ const sketch = (p)=>
         if(!playerCar && !isOverlapped( _x, _y) && parkingBay.isInStartZone(_x,_y))
         {
             let carPosition = {x:_x,y:_y};
-            playerCar= new PlayerCar(carPosition, engine, playerCar_SVG);
+            playerCar= new PlayerCar(carPosition, engine);
         }
     }
 
@@ -89,10 +79,10 @@ const sketch = (p)=>
         //list of bodies pressented at the point (_x,_y)
         let point = {x:_x, y:_y};
         let carBodies =[];
-        //if playerCar exists add to the list
-        playerCar && carBodies.push(playerCar.carBody);
-        //add the opponent cars' boddies to the list 
-        opponentCars.forEach(car => carBodies.push(car.carBody));
+        //if playerCar exists add its matterjs body to the list
+        playerCar && carBodies.push(playerCar.carBody.physic);
+        //add the matterjs bodies of opponent cars'  to the list 
+        opponentCars.forEach(car => carBodies.push(car.carBody.physic));
 
         let collidedBodiesList = Matter.Query.point(carBodies, point)
         if(collidedBodiesList.length != 0) return true;
@@ -118,11 +108,11 @@ const sketch = (p)=>
 
         if(cartype == "A")
         {
-            opponentCars.push(new OpponentCarA({x:_x, y:_y}, engine, carA_SVG, opponentCars.length, startAngle))
+            opponentCars.push(new OpponentCarA({x:_x, y:_y}, engine, opponentCars.length, startAngle))
         }
         else
         {
-            opponentCars.push(new OpponentCarB({x:_x, y:_y}, engine, carB_SVG, opponentCars.length, startAngle))
+            opponentCars.push(new OpponentCarB({x:_x, y:_y}, engine, opponentCars.length, startAngle))
         }
         
     }
@@ -141,8 +131,8 @@ const sketch = (p)=>
         }
     }
     /*#################################### Event Listeners ##############################################*/
-    Events.on(engine, 'collisionStart', (event)=>collisionManeuver(event,opponentCars));
-    //Events.on(engine, 'collisionActive', (event)=>collisionManeuver(event,opponentCars));
+    Events.on(engine, 'collisionStart', (event)=>collisionInstanteManeuver(event,opponentCars));
+    Events.on(engine, 'collisionActive', (event)=>collisionActiveManeuver(event,opponentCars));
 }
 new p5(sketch);
 

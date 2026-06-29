@@ -1,34 +1,19 @@
 let {World, Bodies, Body} = Matter
+import CarBody from "./CarBody.js";
 
 export default class Car
 {
     /**This is a parent class which PlayerCar and two OpponentCar classes are extended from */
-    constructor(_position, _width, _length, _throttle ,_density, _engine, _svgImage,_type=""
-         ,_carIndex=0 ,_startDirection=0)
+    constructor(_position, _width, _length, _throttle ,_density, _engine, _color,_name="",_carIndex=0 ,_startDirection=0, _isHoodPeaked=true)
     {
-        this.#width = _width;
-        this.#length = _length;
         this.acceleration = 0;
         this.#throttle = _throttle;
-        this.carBody = Bodies.rectangle(_position.x, _position.y, this.#length, this.#width, {
-            isStatic:false,
-            friction:0.3,
-            frictionAir:0.3,
-            restitution:1,
-            angle:0,
-            density:_density,
-        }) 
-        this.carBody.carIndex = _carIndex;
-        this.carBody.name= _type;
-        World.add(_engine.world, [this.carBody]) 
-        Body.setAngle(this.carBody, _startDirection)
-        this.svgImage = _svgImage;
+        this.carBody = new CarBody(_position, _length, _width,_density, _engine, _color , _name, _carIndex, _startDirection, _isHoodPeaked) 
+        this.#length = _length
     }
-    svgImage
     carBody;
     #throttle
-    #width;
-    #length;
+    #length
     //It is needed to limit the amount of force on car so it does not act up in collision with
     //barriers when the car keep throttling
     #maxAcceleration = 0.05;
@@ -40,40 +25,34 @@ export default class Car
         maxAngle: Math.PI/4, // absolute
         decrement:0.3
     }
-   
     draw(p)
     {
         this.update();
-        p.push();
-            p.translate(this.carBody.position.x, this.carBody.position.y);
-            p.rotate(this.carBody.angle);
-            p.imageMode(p.CENTER);
-            p.image(this.svgImage, 0, 0, this.#length, this.#width);
-        p.pop();
+        this.carBody.draw(p);
     }
-    
+   
     update()
     {
         //update wheel angle
         this.#wheelManager()
 
         //normal vector from the wheel direction
-        let forceDirection = p5.Vector.fromAngle(this.carBody.angle+this.wheels.angle);
+        let forceDirection = p5.Vector.fromAngle(this.carBody.physic.angle+this.wheels.angle);
         let force = p5.Vector.mult(forceDirection,this.acceleration);
         //it applies the force infront of the car to simulate front wheel drive
-        let forceOffsetX = this.#length/3*2 * Math.cos(this.carBody.angle);
-        let forceOffsetY = this.#length/3*2 * Math.sin(this.carBody.angle);
-        let forcePosition= {x:this.carBody.position.x+forceOffsetX , y:this.carBody.position.y+forceOffsetY}
+        let forceOffsetX = this.#length/3*2 * Math.cos(this.carBody.physic.angle);
+        let forceOffsetY = this.#length/3*2 * Math.sin(this.carBody.physic.angle);
+        let forcePosition= {x:this.carBody.physic.position.x+forceOffsetX , y:this.carBody.physic.position.y+forceOffsetY}
 
-        Body.applyForce(this.carBody,forcePosition, force);
+        Body.applyForce(this.carBody.physic,forcePosition, force);
         
         //limit the speed of the car
-        if(this.carBody.speed > this.#maxVelocity)
+        if(this.carBody.physic.speed > this.#maxVelocity)
         {
             //direction after applying force
-            let direction = p5.Vector.fromAngle(this.carBody.angle);
+            let direction = p5.Vector.fromAngle(this.carBody.physic.angle);
             let newVelocity = p5.Vector.mult(direction, this.#maxVelocity)
-            Body.setVelocity(this.carBody, newVelocity)
+            Body.setVelocity(this.carBody.physic, newVelocity)
         }
 
     }

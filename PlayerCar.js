@@ -3,9 +3,9 @@ import Car from "./Car.js"
 export default class PlayerCar extends Car
 {
     //It is a class for the PlayerCar
-    constructor(_position, engine,svgImage)
+    constructor(_position, _engine)
     {
-        super(_position, 60, 120, .0001 , 0.0005, engine, svgImage, "playerCar")
+        super(_position, 50, 100, .0001 , 0.0005, _engine, [150,150,252] , "playerCar")
     }
     //it takes p as the instance of p5
     steering(p)

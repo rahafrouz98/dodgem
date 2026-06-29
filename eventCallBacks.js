@@ -1,22 +1,25 @@
-/**this function handles the cars reaction when collision happens with batrrier or another car
- -it takes the event and the opponent car array as input
+/**this function handles the cars instant reaction when collision happens with batrrier or another car.
+ * It takes the event and the opponent car array as input
  */
-export let collisionManeuver = (event,opponentCars)=> {
+export let collisionInstanteManeuver = (event,opponentCars)=> {
+        //loop through all the pairs of collisions
         event.pairs.forEach(pair=>{
             const {bodyA, bodyB} = pair;
-            //barrier collision
-            if(bodyA?.parent.name == "barrier")
+            /*############################# barrier collision #########################################*/
+            //only the barrier component have parent as they are assembled as a single component
+            if(bodyA?.parent.name == "barrier" && bodyB.name=="opponentCar")
             {
-                (bodyB.name=="opponentCar") && opponentCars[bodyB.carIndex].reverseHeading();
+                opponentCars[bodyB.carIndex].toggleHeading();
             }
             //barrier collision
-            else if(bodyB?.parent.name == "barrier")
+            else if(bodyB?.parent.name == "barrier" && bodyA.name=="opponentCar")
             {
-                (bodyA.name=="opponentCar") && opponentCars[bodyA.carIndex].reverseHeading();
+                opponentCars[bodyA.carIndex].toggleHeading();
             }
-            //cars collision
+            /*############################## cars collision ###########################################*/
             else if(bodyA.name == "opponentCar" || bodyB.name == "opponentCar")
             {
+
                 //randomly decides both cars turn 90 degree or just on car turns 90 degree
                 //with 0 only one opponent car turns and 1 both opponent cars (if applicable) turns
                 let selector = Math.random() <0.5 ? 0 : 1;
@@ -31,4 +34,22 @@ export let collisionManeuver = (event,opponentCars)=> {
                 }
             }
         })
+}
+
+/**this function will be used for handiling active collision between to change the headingof the engaged car and 
+ *prevent it from getting stuck
+ */
+export let collisionActiveManeuver = (event, opponentCars)=>
+{
+    event.pairs.forEach(pair=>{
+        const {bodyA, bodyB} = pair;
+        if(bodyA.name == "opponentCar" && bodyA.speed ==0 )
+        {
+                opponentCars[bodyA.carIndex].toggleHeading();
+        }
+        else if(bodyB.name == "opponentCar" && bodyB.speed == 0)
+        {
+            opponentCars[bodyB.carIndex].toggleHeading();
+        }
+    })
 }

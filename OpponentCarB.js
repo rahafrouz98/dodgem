@@ -7,6 +7,6 @@ export default class OpponentCarB extends OpponentCar
     *_engine is the instance of Matter.Engine*/ 
     constructor(_position, _width, _Length, _engine, _carIndex = 0, _startDirection = 0)
     {  
-        super(_position, _width, _Length, 0.00005 , 0.002, _engine, [212,76,2] , "opponentCar", true , _carIndex, _startDirection);
+        super(_position, _width, _Length, 0.00003 , 0.005, _engine, [212,76,2] , "opponentCar", true , _carIndex, _startDirection);
     } 
 }

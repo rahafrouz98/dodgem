@@ -3,7 +3,7 @@ import ParkingBay from "./ParkingBay.js"
 import Guard from "./Guard.js"
 import OpponentCarA from "./OpponentCarA.js"
 import OpponentCarB from "./OpponentCarB.js"
-import {collisionActiveManeuver,collisionInstanteManeuver} from "./eventCallBacks.js"
+import {collisionActiveManeuver,collisionInstanteManeuver, collisionSpark} from "./eventCallBacks.js"
 
 let {Engine, Events} = Matter
 
@@ -19,8 +19,9 @@ const sketch = (p)=>
     let arenaHeight;
     let guard;
     let opponentCars=[]
-    let numberOfOpponentCars =  1;
+    let numberOfOpponentCars =  2;
     let mode =3;
+    let sparks=[]
 
     p.setup = ()=>
     {
@@ -40,8 +41,7 @@ const sketch = (p)=>
     
         parkingBay.draw(p);
         
-        guard.draw(p);
-
+        
         playerCar?.draw(p);
         playerCar?.steering(p);
         
@@ -50,6 +50,9 @@ const sketch = (p)=>
             car.steering(mode);
         })
 
+        manageSparks()
+        
+        guard.draw(p);
     
     }
     
@@ -134,8 +137,26 @@ const sketch = (p)=>
             insertOpponentCar("B", 60,120);
         }
     }
+
+    let manageSparks =()=>
+    {
+        for(let i = sparks.length - 1; i >= 0; i--)
+        {
+            if(sparks[i].sparkParticles.length ==0)
+            {
+                sparks.splice(i, 1);
+                continue;
+            }
+            sparks[i].draw(p);
+        }
+         console.log(sparks.length);
+    }
     /*#################################### Event Listeners ##############################################*/
-    Events.on(engine, 'collisionStart', (event)=>collisionInstanteManeuver(event,opponentCars));
+    Events.on(engine, 'collisionStart', (event)=>
+        {
+            collisionInstanteManeuver(event,opponentCars);
+            collisionSpark(event, sparks);
+        });
     Events.on(engine, 'collisionActive', (event)=>collisionActiveManeuver(event,opponentCars));
 }
 new p5(sketch);

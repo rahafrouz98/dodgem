@@ -3,7 +3,7 @@ let {World, Bodies, Body} = Matter;
 export default class CarBody
 {
     /**this is a class for creating the car body in matter js and rendeing it using p5 */
-    constructor(_position, _length, _width, _density, _engine, _color, _name="", _carIndex=0 , _startDirection=0, _isHoodPeaked = true)
+    constructor(_position, _length, _width, _density, _engine, _color, _name="",_carIndex=0 , _startDirection=0, _isHoodPeaked = true)
     {    
         this.#color = _color;
         this.#cornersRadius = _width/20;

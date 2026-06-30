@@ -1,6 +1,7 @@
 let {World, Bodies, Body} = Matter
 import CarBody from "./CarBody.js";
-import Trail from "./Trail.js"
+import Trail from "./Trail.js";
+import Smoker from "./Smoker.js";
 
 export default class Car
 {
@@ -11,27 +12,32 @@ export default class Car
     {
         this.acceleration = 0;
         this.#throttle = _throttle;
-        this.carBody = new CarBody(_position, _length, _width,_density, _engine, _color, _name, _smoker  , _carIndex, _startDirection, _isHoodPeaked) 
+        this.carBody = new CarBody(_position, _length, _width,_density, _engine, _color, _name , _carIndex, _startDirection, _isHoodPeaked) 
         this.#length = _length;
         this.#width = _width;
         this.#maxSpeed = 25;
+        this.#maxAcceleration = 0.05;
         this.#rightTrackRelativePosition = Matter.Vector.create(-this.#length/2, this.#width*0.4)
         this.#leftTrackRelativePosition = Matter.Vector.create(-this.#length/2, -this.#width*0.4)
-        this.trail = new Trail(this.#width/10, this.#maxSpeed)
-        console.log(_carIndex)
+        this.#trail = new Trail(this.#width/10, this.#maxSpeed)
+        _smoker ? this.#smoker = new Smoker(this.#maxAcceleration, this.#width/20) : null;
+        _smoker ? this.#emitterRelativePosition =  Matter.Vector.create(-this.#length/2, this.#width*.4) : null;
+        
     }
-    trail
-    carBody;
-    #throttle
-    #length
-    #width
+    #trail;
+    #smoker;
+    #throttle;
+    #length;
+    #width;
     //It is needed to limit the amount of force on car so it does not act up in collision with
     //barriers when the car keep throttling
-    #maxAcceleration = 0.05;
+    #maxAcceleration;
     acceleration;
     #maxSpeed;
-    #rightTrackRelativePosition
-    #leftTrackRelativePosition
+    #rightTrackRelativePosition;
+    #leftTrackRelativePosition;
+    #emitterRelativePosition
+    carBody;
     wheels={
         increment:0,
         angle:0,
@@ -41,7 +47,8 @@ export default class Car
     draw(p)
     {
         this.update();
-        this.trail.draw(p)
+        this.#trail.draw(p);
+        this.#smoker?.draw(p);
         this.carBody.draw(p);
     }
    
@@ -68,8 +75,12 @@ export default class Car
             let newVelocity = p5.Vector.mult(direction, this.#maxSpeed)
             Body.setVelocity(this.carBody.physic, newVelocity)
         }
-        this.trail.addTrack(  this.#getLeftTrackPosition(),  this.#getRightTrackPosition(), 
-                               this.carBody.physic.speed, Math.abs(this.carBody.physic.angularVelocity), this.carBody.physic.angle)
+        this.#trail.addTrack(  this.#getAbsolutePosition(this.#leftTrackRelativePosition), 
+                                this.#getAbsolutePosition(this.#rightTrackRelativePosition), 
+                               this.carBody.physic.speed, Math.abs(this.carBody.physic.angularVelocity), this.carBody.physic.angle);
+        
+        //if smoker is operational
+        this.#smoker?.emmitSmoke(this.#getAbsolutePosition(this.#emitterRelativePosition), Math.abs(this.acceleration))
     }
     
    moveForward(isAccelerating)
@@ -144,26 +155,15 @@ export default class Car
         this.wheels.increment = increment;
     }
     
-    /**returns the absolute position of the right track  */
-    #getRightTrackPosition()
+    /**returns the absolute postion of the given relative position (relative to the venter of the car) */
+    #getAbsolutePosition(relativePosition)
     {
         //rotate the relative position of the track with the car angle
-        let rotatedVector = Matter.Vector.rotate( this.#rightTrackRelativePosition, this.carBody.physic.angle)
+        let rotatedVector = Matter.Vector.rotate(relativePosition, this.carBody.physic.angle)
         //transfer the vector to the body
         let absolutePosition = Matter.Vector.add(this.carBody.physic.position, rotatedVector);
         return absolutePosition;
     }
-
-    /**returns the absolute position of the left track  */
-    #getLeftTrackPosition()
-    {
-        //rotate the relative position of the track with the car angle
-        let rotatedVector = Matter.Vector.rotate( this.#leftTrackRelativePosition, this.carBody.physic.angle)
-        //transfer the vector to the body
-        let absolutePosition = Matter.Vector.add(this.carBody.physic.position, rotatedVector);
-        return absolutePosition;
-    }
-    
 }
 
 /**

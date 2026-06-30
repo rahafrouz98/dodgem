@@ -3,13 +3,14 @@ let {World, Bodies, Body} = Matter;
 export default class CarBody
 {
     /**this is a class for creating the car body in matter js and rendeing it using p5 */
-    constructor(_position, _length, _width, _density, _engine, _color, _name="",_carIndex=0 , _startDirection=0, _isHoodPeaked = true)
+    constructor(_position, _length, _width, _density, _engine, _color, _name="",_carIndex=0 , _startDirection=0)
     {    
         this.#color = _color;
         this.#cornersRadius = _width/20;
         this.#length = _length;
         this.#width = _width;
-        this.#isHoodPeaked = _isHoodPeaked;
+        this.#hoodPeak = this.#width/7;
+        this.#fenderWidth = this.#length/50;
         
 
         this.physic = Bodies.fromVertices(_position.x, _position.y, this.#generateVertices(_length, _width) ,{
@@ -27,9 +28,10 @@ export default class CarBody
         Body.setAngle(this.physic, _startDirection)
 
     }
-    #isHoodPeaked;
     #length;
     #width;
+    #hoodPeak;
+    #fenderWidth
     #cornersRadius;
     #color;
     physic;
@@ -50,45 +52,43 @@ export default class CarBody
     }
 
     /**it generates the vertices  of the shape */
-    #generateVertices(length, width, isHoodPeaked=true)
+    #generateVertices()
     {
-        let hoodPeak = isHoodPeaked ? width/7 : 0
-        let fenderWidth = length/50;
         let vertices = [];
         //hood peak
-        vertices.push({x:length/2+hoodPeak, y: 0} )
+        vertices.push({x:this.#length/2+this.#hoodPeak, y: 0} )
         //right-front fender 1 
-        vertices.push({x: length/2, y: width/2});
+        vertices.push({x: this.#length/2, y: this.#width/2});
         //right-front fender 2
-        vertices.push({x: (length/2-fenderWidth*2), y: width/2+fenderWidth});
+        vertices.push({x: (this.#length/2-this.#fenderWidth*2), y: this.#width/2+this.#fenderWidth});
         //right-front-fender 3
-        vertices.push({x: length/4, y: (width/2+fenderWidth)});
+        vertices.push({x: this.#length/4, y: (this.#width/2+this.#fenderWidth)});
         //right-front-fender 4
-        vertices.push({x: length/4-fenderWidth*2, y: width/2});
+        vertices.push({x: this.#length/4-this.#fenderWidth*2, y: this.#width/2});
         //right-back-fender 1
-        vertices.push({x: -length/4+fenderWidth*2, y: width/2});
+        vertices.push({x: -this.#length/4+this.#fenderWidth*2, y: this.#width/2});
         //right-back-fender 2
-        vertices.push({x: -length/4, y: width/2+fenderWidth});
+        vertices.push({x: -this.#length/4, y: this.#width/2+this.#fenderWidth});
         //right-back-fender 3
-        vertices.push({x: -length/2+fenderWidth*2, y: width/2+fenderWidth});
+        vertices.push({x: -this.#length/2+this.#fenderWidth*2, y: this.#width/2+this.#fenderWidth});
         //right-back-fender 4
-        vertices.push({x: -length/2, y: width/2});
+        vertices.push({x: -this.#length/2, y: this.#width/2});
         //left-back-fender 4
-        vertices.push({x: -length/2, y: -width/2});
+        vertices.push({x: -this.#length/2, y: -this.#width/2});
         //left-back-fender 3
-        vertices.push({x: -length/2+fenderWidth*2, y: -width/2-fenderWidth});
+        vertices.push({x: -this.#length/2+this.#fenderWidth*2, y: -this.#width/2-this.#fenderWidth});
         //left-back-fender 2
-        vertices.push({x: -length/4,  y:-width/2-fenderWidth});
+        vertices.push({x: -this.#length/4,  y:-this.#width/2-this.#fenderWidth});
         //left-back-fender 1
-        vertices.push({x: -length/4+fenderWidth*2, y: -width/2});
+        vertices.push({x: -this.#length/4+this.#fenderWidth*2, y: -this.#width/2});
         //left-front-fender 4
-        vertices.push({x: length/4-fenderWidth*2, y: -width/2});
+        vertices.push({x: this.#length/4-this.#fenderWidth*2, y: -this.#width/2});
         //left-front-fender 3
-        vertices.push({x: length/4, y: -(width/2+fenderWidth)});
+        vertices.push({x: this.#length/4, y: -(this.#width/2+this.#fenderWidth)});
         //left-front-fender 2
-        vertices.push({x: length/2-fenderWidth*2, y: -(width/2+fenderWidth)});
+        vertices.push({x: this.#length/2-this.#fenderWidth*2, y: -(this.#width/2+this.#fenderWidth)});
         //left-front-fender 1
-        vertices.push({x: length/2, y: -width/2});
+        vertices.push({x: this.#length/2, y: -this.#width/2});
 
         return vertices;
     }
@@ -106,12 +106,18 @@ export default class CarBody
         this.#drawBackWindow(p);
         this.#drawLeftWindow(p);
         this.#drawRightWindow(p);
+        this.#drawFrontGrill(p);
+        this.#drawBackGrill(p);
+        this.#drawRightTaillight(p);
+        this.#drawLeftTaillight(p);
+        this.#drawLeftHeadlight(p);
+        this.#drawRightHeadlight(p);
         p.pop()
     }
 
     #drawBody(p, x, y)
     {
-        let vertices = this.#generateVertices(this.#length, this.#width, this.#isHoodPeaked)
+        let vertices = this.#generateVertices()
         p.push();
             p.fill(this.#color[0], this.#color[1], this.#color[2]);
             p.beginShape();
@@ -126,33 +132,29 @@ export default class CarBody
     /**draw roof */
     #drawRoof(p, windowPoints)
     {
-        let length = this.#length;
-        let carWidth = this.#width;
         p.push();
             p.blendMode(p.MULTIPLY)
             p.fill(200,200,200);
             p.beginShape();
             p.vertex(windowPoints[0].x, windowPoints[0].y);
             p.vertex(windowPoints[1].x, windowPoints[1].y);
-            p.vertex(-length/5, -carWidth/2.5);
-            p.vertex(-length/5, +carWidth/2.5);
+            p.vertex(-this.#length/5, -this.#width/2.5);
+            p.vertex(-this.#length/5, +this.#width/2.5);
             p.endShape(p.CLOSE);
         p.pop();
     }
     /**draw the backwindow */
     #drawBackWindow(p)
-    {
-        let length = this.#length;
-        let carWidth = this.#width;
+    {this.#length
         p.push();
             p.fill(220,230,235,200);
             p.stroke(0)
             p.strokeWeight(0.1)
             p.beginShape();
-            p.vertex(-length/5, -carWidth/2.5);
-            p.vertex(-length/3, -carWidth/2.3);
-            p.vertex(-length/3, +carWidth/2.3);
-            p.vertex(-length/5, +carWidth/2.5);
+            p.vertex(-this.#length/5, -this.#width/2.5);
+            p.vertex(-this.#length/3, -this.#width/2.3);
+            p.vertex(-this.#length/3, +this.#width/2.3);
+            p.vertex(-this.#length/5, +this.#width/2.5);
             p.endShape(p.CLOSE);
         p.pop();
     }
@@ -160,8 +162,6 @@ export default class CarBody
     /**draws the front window and returns the top corners coordinates for later use */
     #drawFrontWindow(p)
     {
-        let length = this.#length;
-        let carWidth = this.#width;
         let windowPoints
         p.push()
             p.fill(220,230,235,200);
@@ -169,9 +169,9 @@ export default class CarBody
             p.strokeWeight(0.1)
             p.beginShape()
             //the buttom curve of the front window
-            this.#vertexCurve(p, -length/15, 0, length/2.6, -Math.PI/5.2, Math.PI/5.2)
+            this.#vertexCurve(p, -this.#length/15, 0, this.#length/2.6, -Math.PI/5.2, Math.PI/5.2)
             //the top curve of the front window
-            windowPoints = this.#vertexCurve(p, -length*.95, 0, length*1.1, Math.PI/17, -Math.PI/17)
+            windowPoints = this.#vertexCurve(p, -this.#length*.95, 0, this.#length*1.1, Math.PI/17, -Math.PI/17)
             p.endShape(p.CLOSE)
         p.pop()
         return windowPoints;
@@ -180,18 +180,15 @@ export default class CarBody
     /**draws left window */
     #drawLeftWindow(p)
     {
-        let length = this.#length;
-        let carWidth = this.#width;
-
         p.push();
         p.fill(220, 230, 235, 200);
         p.stroke(0);
         p.strokeWeight(0.1);
         p.beginShape();
-        p.vertex(length*.23, -carWidth*.47);
-        p.vertex(length*.12, -carWidth*.43);
-        p.vertex(-length*.18, -carWidth*.43);
-        p.vertex(-length*.25, -carWidth*.47);
+        p.vertex(this.#length*.23, -this.#width*.47);
+        p.vertex(this.#length*.12, -this.#width*.43);
+        p.vertex(-this.#length*.18, -this.#width*.43);
+        p.vertex(-this.#length*.25, -this.#width*.47);
         p.endShape(p.CLOSE);
         p.pop();
     }
@@ -199,21 +196,137 @@ export default class CarBody
     /**draws right window */
     #drawRightWindow(p)
     {
-        let length = this.#length;
-        let carWidth = this.#width;
-
         p.push();
         p.fill(220, 230, 235, 200);
         p.stroke(0);
         p.strokeWeight(0.1);
         p.beginShape();
-        p.vertex(length*.23, carWidth*.47);
-        p.vertex(length*.12, carWidth*.43);
-        p.vertex(-length*.18, carWidth*.43);
-        p.vertex(-length*.25, carWidth*.47);
+        p.vertex(this.#length*.23, this.#width*.47);
+        p.vertex(this.#length*.12, this.#width*.43);
+        p.vertex(-this.#length*.18, this.#width*.43);
+        p.vertex(-this.#length*.25, this.#width*.47);
         p.endShape(p.CLOSE);
         p.pop();
     }
+
+    /**draw front grille */
+    #drawFrontGrill(p)
+    {
+        p.push();
+            p.blendMode(p.MULTIPLY)
+            p.fill(200,200,200);
+            p.beginShape();
+            //left-front-fender 2
+            p.vertex(this.#length/2-this.#fenderWidth*2,-(this.#width/2+this.#fenderWidth));
+            //left-front-fender 1
+            p.vertex(this.#length/2, -this.#width/2);
+            //hood peak
+            p.vertex(this.#length/2+this.#hoodPeak, 0)
+            //right-front fender 1 
+            p.vertex(this.#length/2,this.#width/2);
+            //right-front fender 2
+            p.vertex((this.#length/2-this.#fenderWidth*2), this.#width/2+this.#fenderWidth);
+            //grill top-center
+            p.vertex(this.#length/2+this.#fenderWidth*2,0)
+            p.endShape(p.CLOSE);
+        p.pop();
+    }
+    /**draw back grill*/
+     #drawBackGrill(p)
+     {
+         p.push();
+            p.blendMode(p.MULTIPLY)
+            p.fill(200,200,200);
+            p.beginShape();
+            //right-back-fender 3
+            p.vertex(-this.#length/2+this.#fenderWidth*2, this.#width/2+this.#fenderWidth);
+            //right-back-fender 4
+            p.vertex(-this.#length/2, this.#width/2);
+            //left-back-fender 4
+            p.vertex(-this.#length/2,-this.#width/2);
+            //left-back-fender 3
+            p.vertex(-this.#length/2+this.#fenderWidth*2, -this.#width/2-this.#fenderWidth);
+            p.endShape(p.CLOSE);
+        p.pop();
+     }
+
+    /**left taillight */
+    #drawRightTaillight(p)
+    {
+        p.push();
+            p.fill(220, 230, 235, 200);
+            p.stroke(0);
+            p.strokeWeight(0.1);
+            p.beginShape();
+            //top-right
+            p.vertex(-this.#length/2+this.#fenderWidth*1.7, this.#width/2-this.#fenderWidth);
+            //top-left
+            p.vertex(-this.#length/2+this.#fenderWidth*1.7, this.#width/2-this.#fenderWidth*8);
+            //bottom-left
+            p.vertex( -this.#length/2+this.#fenderWidth*.3,this.#width/2-this.#fenderWidth*7)
+            //bottom-right
+            p.vertex( -this.#length/2+this.#fenderWidth*.3,this.#width/2-this.#fenderWidth*1.4)
+            p.endShape(p.CLOSE);
+        p.pop();
+    }
+    /**left taillight */
+    #drawLeftTaillight(p)
+    {
+        p.push();
+            p.fill(220, 230, 235, 200);
+            p.stroke(0);
+            p.strokeWeight(0.1);
+            p.beginShape();
+            //top-right
+            p.vertex(-this.#length/2+this.#fenderWidth*1.7, -(this.#width/2-this.#fenderWidth));
+            //top-left
+            p.vertex(-this.#length/2+this.#fenderWidth*1.7, -(this.#width/2-this.#fenderWidth*8));
+            //bottom-left
+            p.vertex( -this.#length/2+this.#fenderWidth*.3,-(this.#width/2-this.#fenderWidth*7))
+            //bottom-right
+            p.vertex( -this.#length/2+this.#fenderWidth*.3,-(this.#width/2-this.#fenderWidth*1.4))
+            p.endShape(p.CLOSE);
+        p.pop();
+    }
+    /**left headlight */
+    #drawLeftHeadlight(p)
+    {
+        p.push();
+            p.fill(220, 230, 235, 200);
+            p.stroke(0);
+            p.strokeWeight(0.1);
+            p.beginShape();
+            //top-left
+            p.vertex(this.#length/2-this.#fenderWidth*1.7,-(this.#width/2-this.#fenderWidth*.3));
+            //botrom-left
+            p.vertex(this.#length/2-this.#fenderWidth*.3, -(this.#width/2-this.#fenderWidth*.8));
+            //bottom-right
+            p.vertex(this.#length/2+this.#fenderWidth*1.2, -(this.#width/2-this.#fenderWidth*6));
+            //top-right
+            p.vertex(this.#length/2+this.#fenderWidth*.3,-(this.#width/2-this.#fenderWidth*6));
+            p.endShape(p.CLOSE);
+        p.pop();
+    }
+    /**right headlight */
+    #drawRightHeadlight(p)
+    {
+        p.push();
+            p.fill(220, 230, 235, 200);
+            p.stroke(0);
+            p.strokeWeight(0.1);
+            p.beginShape();
+            //top-left
+            p.vertex(this.#length/2-this.#fenderWidth*1.7,(this.#width/2-this.#fenderWidth*.3));
+            //botrom-left
+            p.vertex(this.#length/2-this.#fenderWidth*.3, (this.#width/2-this.#fenderWidth*.8));
+            //bottom-right
+            p.vertex(this.#length/2+this.#fenderWidth*1.2, (this.#width/2-this.#fenderWidth*6));
+            //top-right
+            p.vertex(this.#length/2+this.#fenderWidth*.3,(this.#width/2-this.#fenderWidth*6));
+            p.endShape(p.CLOSE);
+        p.pop();
+    }
+    
 
 
     /**it is a customized function for generating curve vertices based on the center of the arc, 

@@ -19,7 +19,7 @@ const sketch = (p)=>
     let arenaHeight;
     let guard;
     let opponentCars=[]
-    let numberOfOpponentCars =  2;
+    let numberOfOpponentCars =  4;
     let mode =3;
     let sparks=[]
 
@@ -149,7 +149,6 @@ const sketch = (p)=>
             }
             sparks[i].draw(p);
         }
-         console.log(sparks.length);
     }
     /*#################################### Event Listeners ##############################################*/
     Events.on(engine, 'collisionStart', (event)=>

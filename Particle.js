@@ -35,7 +35,8 @@ export default class Particle
             p.rect(0, 0, this.#radius*3, this.#radius, this.#radius/2);
         p.pop();
 
-        this.#update(p);
+        this.#life++;
+
     }
     drawSmoke(p)
     {
@@ -48,35 +49,37 @@ export default class Particle
             p.ellipse(0, 0, this.#radius, this.#radius);
         p.pop();
 
-        this.#update(p);
+        this.#life++;
+    
+        if(this.#isFlow)
+        {
+            this.#x += p.noise(this.#life*.1)*2-1;
+            this.#y += p.noise(this.#life*.1+.1)*2-1 ;
+        }
     }
 
     drawSpark(p)
     {
         this.alpha = p.map(this.#life, 0, this.#maxLife , this.#startAlpha, 0)
         p.push();
-            p.stroke(255,255,0,this.alpha);
-            p.strokeWeight(this.#radius/6);
+            p.stroke(255,200,0,this.alpha);
+            p.strokeWeight(1);
             p.translate(this.#x, this.#y);
-            for(let i = 0; i < 4; i++ )
+            for(let i = 0; i <= 4; i++ )
             {
                 this.#angle += i*Math.PI/4;
                 p.rotate(this.#angle)
-                line(this.#x-this.#radius/2, 0,this.#x-this.#radius/2,0 )
+                p.line(-this.#radius*.6, 0,this.#radius*.6,0 )
             }
         p.pop();
 
-        this.#update(p);
-    }
-
-    #update(p)
-    {
         this.#life++;
     
         if(this.#isFlow)
         {
-            this.#x += p.noise(this.#life/10);
-            this.#y += p.noise((this.#life/10)+.3) ;
+            this.#x += (p.random()*2-1) ;
+            this.#y += (p.random()*2-1) ;
         }
     }
+
 }

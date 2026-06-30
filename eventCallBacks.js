@@ -66,5 +66,4 @@ export let collisionSpark = (event, sparks) =>
             collision.supports.forEach(support=>sparks.push(new Sparker(support.x, support.y, collision.depth)))
         }
     })
-    console.log(sparks.length);
 }

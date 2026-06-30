@@ -7,7 +7,7 @@ export default class Sparker
         this.#x = _x;
         this.#y = _y;
         this.#collisionDepth = _collisionDepth;
-
+        this.generateSparkParticles()
     }
     #x;
     #y;
@@ -16,17 +16,16 @@ export default class Sparker
     #startAlpha = 150;
     sparkParticles=[];
     
-    generateSpark(_collisionDepth)
+    generateSparkParticles(_collisionDepth)
     {
         
-        let sparksNumber = _collisionDepth * 10;
-        console.log(sparksNumber)
+        let sparksNumber = this.#collisionDepth * 5;
         for(let i = 0; i < sparksNumber; i++)
         {                                           
-            this.sparkParticles.push(new Particle(this.#x, this.#y, this.#particleSize, this.#startAlpha, 0, true));
+            this.sparkParticles.push(new Particle(this.#x, this.#y, this.#particleSize, this.#startAlpha, 0, CSSViewTransitionRule));
         }
     }
-    
+    i
     draw(p)
     {
         this.sparkParticles.forEach(particle => {

@@ -8,11 +8,11 @@ export default class Car
     /**This is a parent class which PlayerCar and two OpponentCar classes are extended from 
      * _engine is the instance of Matter.Engine 
     */
-    constructor(_position, _width, _length, _throttle ,_density, _engine, _color, _name="", _smoker = false , _carIndex=0 ,_startDirection=0, _isHoodPeaked=true)
+    constructor(_position, _width, _length, _throttle ,_density, _engine, _color, _name="", _smoker = false , _carIndex=0 ,_startDirection=0)
     {
         this.acceleration = 0;
         this.#throttle = _throttle;
-        this.carBody = new CarBody(_position, _length, _width,_density, _engine, _color, _name , _carIndex, _startDirection, _isHoodPeaked) 
+        this.carBody = new CarBody(_position, _length, _width,_density, _engine, _color, _name , _carIndex, _startDirection) 
         this.#length = _length;
         this.#width = _width;
         this.#maxSpeed = 25;

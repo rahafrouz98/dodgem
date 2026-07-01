@@ -12,14 +12,14 @@ export default class Sparker
     #x;
     #y;
     #collisionDepth;
-    #particleSize = 5;
+    #particleSize = 4;
     #startAlpha = 150;
     sparkParticles=[];
     
     generateSparkParticles(_collisionDepth)
     {
         
-        let sparksNumber = this.#collisionDepth * 5;
+        let sparksNumber = this.#collisionDepth * .7;
         for(let i = 0; i < sparksNumber; i++)
         {                                           
             this.sparkParticles.push(new Particle(this.#x, this.#y, this.#particleSize, this.#startAlpha, 0, CSSViewTransitionRule));

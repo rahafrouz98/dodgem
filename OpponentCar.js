@@ -55,6 +55,16 @@ export default class OpponentCar extends Car
 
     steering(mode)
     {
+        //makes all cars steady when switch from mode 2 or 3 to mode 1
+        if(mode == 1 )
+        {
+            this.#trajictoryPath.isActive = false;
+            this.#turn90.status = 0;
+            this.moveForward(false);
+            this.moveBackward(false);
+        }
+        //makes sure in mode 2 the wheel is straight if it has been in mode 3 before
+        mode == 2 && this.turnWheels(0);
         //the car will move forward or backward 
         if(mode == 2 || mode == 3)
         {

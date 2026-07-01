@@ -47,11 +47,11 @@ export let collisionActiveManeuver = (_event, _opponentCars)=>
         const {bodyA, bodyB} = pair;
         if(bodyA.name == "opponentCar" && bodyA.speed ==0 )
         {
-                _opponentCars[bodyA.carIndex].toggleHeading();
+                _opponentCars[bodyA.carIndex]?.toggleHeading();
         }
         else if(bodyB.name == "opponentCar" && bodyB.speed == 0)
         {
-            _opponentCars[bodyB.carIndex].toggleHeading();
+            _opponentCars[bodyB.carIndex]?.toggleHeading();
         }
     })
 }
@@ -65,10 +65,10 @@ export let collisionSpark = (_event, _sparks, _opponentCars, _playerCar) =>
         {
             collision.supports.forEach(support=>_sparks.push(new Sparker(support.x, support.y, collision.depth)));
             //record collision data on the hidtory of cars
-            if(bodyA.name == "playerCar") _playerCar.manageCollision(collision);
-            else if(bodyB.name == "playerCar") _playerCar.manageCollision(collision);
-            if(bodyA.name == "opponentCar") _opponentCars[bodyA.carIndex].manageCollision(collision);
-            if(bodyB.name == "opponentCar") _opponentCars[bodyB.carIndex].manageCollision(collision);
+            if(bodyA.name == "playerCar") _playerCar?.manageCollision(collision);
+            else if(bodyB.name == "playerCar") _playerCar?.manageCollision(collision);
+            if(bodyA.name == "opponentCar") _opponentCars[bodyA.carIndex]?.manageCollision(collision);
+            if(bodyB.name == "opponentCar") _opponentCars[bodyB.carIndex]?.manageCollision(collision);
         }
     })
 }

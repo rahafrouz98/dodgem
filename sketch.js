@@ -18,18 +18,19 @@ const sketch = (p)=>
     let arenaWidth;
     let arenaHeight;
     let guard;
-    let opponentCars=[]
+    let opponentCars=[];
     let numberOfOpponentCars =  4;
-    let mode =1;
-    let sparks=[]
+    let mode =3;
+    let sparks=[];
+    let barrierThickness = 10;
 
     p.setup = ()=>
     {
         p.createCanvas(1400, 700);
-        let barrierThickness = 10;
+        createMenu();
         parkingBay = new ParkingBay( barrierThickness, barrierThickness,
                                     p.width/4, p.height-(barrierThickness*2), engine);
-        guard = new Guard(p,25,25, 1375,675, barrierThickness, engine);
+        guard = new Guard(p,20,20, 1380,680, barrierThickness, engine);
         //spawn the opponent cars at random places inside the parking bay(start zone)
         spawnOpponentCars(numberOfOpponentCars);
     }
@@ -64,20 +65,31 @@ const sketch = (p)=>
             spawnPlayerCar(p.mouseX, p.mouseY, 60,120);
         }
     }
+    p.mouseMoved = ()=>
+    {
+        if(p.mouseX < p.width && p.mouseX > p.width -300  && p.mouseY < 300)
+        {
+            p.select("#menu").style("display", "block")
+        }
+        else 
+        {
+            p.select("#menu").style("display", "none")
+        }
+    }
     
     /*################################# functions ###################################*/
-    let spawnPlayerCar =(_x,_y, carLength, carWidth)=>
+    let spawnPlayerCar =(_x,_y, carWidth, carLength)=>
     {
         //if there is no overlap with other existing cars and it is not already existing and the mouse is inside start zone
-        if(!playerCar && !isOverlapped( _x, _y, carLength) && parkingBay.isInStartZone(_x,_y))
+        if(!playerCar && !isOverlapped( _x, _y, carLength/2) && parkingBay.isInStartZone(_x,_y))
         {
             let carPosition = {x:_x,y:_y};
-            playerCar= new PlayerCar(p,carPosition, carLength, carWidth , engine);
+            playerCar= new PlayerCar(p,carPosition, carWidth, carLength , engine);
         }
     }
 
-    //cheks if the an area of length equal to _carLength and at given x and y has any car in it
-    let isOverlapped =(_x,_y, _carLength)=>
+    //checks if the an area of length equal to _carLength and at given x and y has any car in it
+    let isOverlapped =(_x,_y, _length)=>
     {
         //list of bodies pressented at the point (_x,_y)
         let point = {x:_x, y:_y};
@@ -86,10 +98,10 @@ const sketch = (p)=>
         playerCar && carBodies.push(playerCar.carBody.physic);
         //add the matterjs bodies of opponent cars'  to the list 
         opponentCars.forEach(car => carBodies.push(car.carBody.physic));
-        let bounds = Matter.Bounds.create([{x:_x+ _carLength, y: _y+ _carLength}, 
-                                           {x:_x+ _carLength, y: _y- _carLength},
-                                           {x:_x- _carLength, y: _y- _carLength},
-                                           {x:_x- _carLength, y: _y+ _carLength}
+        let bounds = Matter.Bounds.create([{x:_x+ _length, y: _y+ _length}, 
+                                           {x:_x+ _length, y: _y- _length},
+                                           {x:_x- _length, y: _y- _length},
+                                           {x:_x- _length, y: _y+ _length}
                                         ])
         let collidedBodiesList = Matter.Query.region(carBodies, bounds)
         if(collidedBodiesList.length != 0) return true;
@@ -150,6 +162,24 @@ const sketch = (p)=>
             sparks[i].draw(p);
         }
     }
+    /**clears the instances and reinitiates */
+    let resetGame = ()=>
+    {
+        playerCar = null;
+        opponentCars = [];
+        sparks = [];
+
+        Matter.World.clear(engine.world, false);
+        Engine.clear(engine)
+
+
+        parkingBay = new ParkingBay( barrierThickness, barrierThickness,
+                                    p.width/4, p.height-(barrierThickness*2), engine);
+        guard = new Guard(p,20,20, 1380,680, barrierThickness, engine);
+        //spawn the opponent cars at random places inside the parking bay(start zone)
+        spawnOpponentCars(numberOfOpponentCars);
+
+    }
     /*#################################### Event Listeners ##############################################*/
     /**it is an event listerner for instante action when collision happens
      * it manages collision maneuver, sparking and adding collision data to the car instances
@@ -163,6 +193,84 @@ const sketch = (p)=>
     /**This event listenr is applied to toogle the direction of cars when they are stuck
  */
     Events.on(engine, 'collisionActive', (event)=>collisionActiveManeuver(event,opponentCars));
+
+
+    /*################################### Menu #############################################################*/
+    let  createMenu = ()=>
+    {
+
+        let menuContainer = p.createDiv();
+        menuContainer.style("width", "300px");
+        menuContainer.style("height", "200px");
+        menuContainer.style("background", "rgba(2, 57, 121, 0.3)")
+        menuContainer.id("menu");
+        setTimeout(() => { menuContainer.style("display", "none")}, 2000 );
+        menuContainer.position(p.width-350, 25);
+
+        
+        let modeLabel = p.createElement("label", "Select game mode: ");
+        modeLabel.position(50,30)
+
+        menuContainer.child(modeLabel)
+
+        let modeSelector = p.createRadio();
+        modeSelector.position(50,50);
+        modeSelector.size(250)
+        modeSelector.option(1);
+        modeSelector.option(2);
+        modeSelector.option(3);
+
+        //event listener for the change in the mode
+        modeSelector.changed(()=>
+            {
+                mode = modeSelector.value();
+            })
+        modeSelector.selected(String(mode));
+
+        menuContainer.child(modeSelector);
+
+        let numberSelectorLabel = p.createElement("label", "Select Number of Cars: ");
+        numberSelectorLabel.position(50,100)
+
+        menuContainer.child(numberSelectorLabel)
+
+
+        let carNumbersSelector = p.createSelect();
+        carNumbersSelector.position(50, 120);
+        carNumbersSelector.option(4);
+        carNumbersSelector.option(3);
+        carNumbersSelector.option(2);
+        carNumbersSelector.option(1);
+        carNumbersSelector.selected(String(numberOfOpponentCars))
+
+        //event listener for the change in the number of cars
+        carNumbersSelector.changed(()=>{
+            numberOfOpponentCars = carNumbersSelector.value();
+           
+            while(numberOfOpponentCars < opponentCars.length)
+            {
+                Matter.World.remove(engine.world, opponentCars.at(-1).carBody.physic);
+                opponentCars.pop();
+            
+            }
+            while(numberOfOpponentCars > opponentCars.length)
+            {
+                spawnOpponentCars((numberOfOpponentCars - opponentCars.length));
+            }
+        });
+
+        menuContainer.child(carNumbersSelector);
+
+        let resetButton = p.createButton("Reset Game");
+        resetButton.position(50, 160);
+        resetButton.style("width", "200px");
+        resetButton.style("height", "30px");
+        resetButton.style("border-radius", "15px");
+        
+        resetButton.mousePressed(resetGame);
+
+         menuContainer.child(resetButton);
+    }
 }
 new p5(sketch);
 
@@ -170,6 +278,9 @@ new p5(sketch);
 /**https://www.html5gamedevs.com/topic/39536-identify-objects-in-collisionstart/ for adding label
  https://github.com/liabru/matter-js/issues/744 for parent
  https://stackoverflow.com/questions/70624648/matter-query-region-not-returning-any-collisions-even-though-the-bound-is-clearl for query.region
+ https://thecodingtrain.com/tracks/the-nature-of-code-2/noc/6-physics-libraries/3-matterjs-deleting-bodies removig bodies
+ https://github.com/liabru/matter-js/issues/564 to reset engine
+ https://stackoverflow.com/questions/60195772/how-to-completely-stop-reset-reinitialize-matter-js-canvas-world-engine-instance
  */
 
 

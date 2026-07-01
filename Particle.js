@@ -88,17 +88,19 @@ export default class Particle
 
         p.push();
             p.noStroke();
-            p.fill(50,50,50,this.alpha);
+            let isFire = p.random([true,false, false,false])
+            isFire ? p.fill(200,200,0,this.alpha)  :p.fill(50,50,50,this.alpha);
             p.translate(this.#x, this.#y);
             p.ellipse(0, 0, this.#radius, this.#radius);
         p.pop();
 
         this.#life++;
+        this.#radius*= 1.06;
     
         if(this.#isFlow)
         {
-            this.#x += p.noise(this.#life*.1)*2-1;
-            this.#y += p.noise(this.#life*.1+.1)*2-1 ;
+            this.#x += p.noise((this.#life+p.frameCount)/100)*2-1;
+            this.#y += p.noise(this.#life*+1.2+p.frameCount)*2-1 ;
         }
     }
 

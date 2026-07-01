@@ -34,7 +34,7 @@ export default class ParkingBay
     //checks if the x and y coordinate is inside the parking bay
     isInStartZone(x,y)
     {
-        if(x < this.#bayWidth+this.#x-100 && x > this.#x && y > this.#y && y < this.#bayHeight+this.#y)
+        if(x < this.#bayWidth+this.#x-60 && x > this.#x+60 && y > this.#y+60 && y < this.#bayHeight+this.#y-60)
         {
             return true;
         }

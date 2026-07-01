@@ -54,6 +54,9 @@ export default class Car
    
     update()
     {
+        //check if there is any life remained
+        if (this.carBody.remainedLife <=0 )return;
+        
         //update wheel angle
         this.#wheelManager()
 

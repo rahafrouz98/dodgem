@@ -40,6 +40,9 @@ export default class CarBody
         this.#leftHeadlightCrack = this.#initiallizeCrackGraph(this.#width/10, this.#width/5);
         this.#rightTaillightCrack = this.#initiallizeCrackGraph(this.#width/10, this.#width/4);
         this.#leftTaillightCrack = this.#initiallizeCrackGraph(this.#width/10, this.#width/4);
+
+        //car starts with 100% life
+        this.remainedLife = 100
     }
     //p5 instance
     #p;
@@ -74,11 +77,17 @@ export default class CarBody
         "back": ()=>{this.#updateWindowCrack(this.#backWindowCrack)},
         "right": ()=>{this.#updateWindowCrack(this.#rightWindowCrack)},
         "left": ()=>{this.#updateWindowCrack(this.#leftWindowCrack)},
-        "front-right": ()=>{this.#updateLightCrack(this.#rightHeadlightCrack)},
-        "front-left": ()=>{this.#updateLightCrack(this.#leftHeadlightCrack)},
-        "back-right": ()=>{this.#updateLightCrack(this.#rightTaillightCrack)},
-        "back-left": ()=>{this.#updateLightCrack(this.#leftTaillightCrack)}
+        "front-right": ()=>{
+            this.#collisionHistory["front-right"] > this.#lightCollisionthreshold && this.#updateLightCrack(this.#rightHeadlightCrack)},
+        "front-left": ()=>{
+            this.#collisionHistory["front-left"] > this.#lightCollisionthreshold &&  this.#updateLightCrack(this.#leftHeadlightCrack)},
+        "back-right": ()=>{
+            this.#collisionHistory["back-right"] > this.#lightCollisionthreshold && this.#updateLightCrack(this.#rightTaillightCrack)},
+        "back-left": ()=>{
+            this.#collisionHistory["back-left"] > this.#lightCollisionthreshold && this.#updateLightCrack(this.#leftTaillightCrack)}
     }
+    #maxCollision = 150;
+    #lightCollisionthreshold = 10;
     physic;
     remainedLife;
 
@@ -159,16 +168,18 @@ export default class CarBody
         this.#drawLeftTaillight();
         this.#drawLeftHeadlight();
         this.#drawRightHeadlight();
+        this.#drawLifeBar();
+         p.pop()
 
         /*################################# draw burning smoke ############################################## */
         if(this.#burningSmoke)
         {
-            this.#burningSmoke.emitteSmoke({x: this.physic.position.x + this.#length/4, y: this.physic.position.y})
+            let position = {x: this.physic.position.x + this.#length/3* Math.cos(this.physic.angle),
+                            y: this.physic.position.y + this.#length/3* Math.sin(this.physic.angle)}
+            this.#burningSmoke.emitteSmoke(position)
             this.#burningSmoke.draw(this.#p);
         }
 
-
-        p.pop()
     }
 
     #drawBody(x, y)
@@ -410,7 +421,7 @@ export default class CarBody
     #drawRightTaillightGlass()
     {
         let p = this.#p;
-        p.fill(220, 230, 235, 200);
+        p.fill(220, 230, 0, 200);
         p.stroke(0);
         p.strokeWeight(0.1);
         p.beginShape();
@@ -447,7 +458,7 @@ export default class CarBody
     {
         let p = this.#p;
       
-        p.fill(220, 230, 235, 200);
+        p.fill(220, 230, 0, 200);
         p.stroke(0);
         p.strokeWeight(0.1);
         p.beginShape();
@@ -486,7 +497,7 @@ export default class CarBody
     {
         let p = this.#p;
        
-        p.fill(220, 230, 235, 200);
+        p.fill(220, 230, 0, 200);
         p.stroke(0);
         p.strokeWeight(0.1);
         p.beginShape();
@@ -523,7 +534,7 @@ export default class CarBody
     {
         let p = this.#p;
        
-        p.fill(255, 255, 255, 200);
+        p.fill(220, 230, 0,200);
         p.stroke(0);
         p.strokeWeight(0.1);
         p.beginShape();
@@ -537,6 +548,25 @@ export default class CarBody
         p.vertex(this.#length/2+this.#fenderWidth*.3, (this.#width/2-this.#fenderWidth*6));
         p.endShape(p.CLOSE);
         
+    }
+
+    /**draw lifebar */
+    #drawLifeBar()
+    {
+        let p = this.#p;
+
+        p.push()
+            p.noStroke();
+            p.fill(0);
+            p.rect(-this.#length/8, -this.#width/3, this.#length/15, this.#width/1.5)
+            p.fill(255,0,0);
+            let barLength = this.#width/1.5 *((100-this.remainedLife)/100);
+            p.rect(-this.#length/8, -this.#width/3, this.#length/15, barLength);
+            p.textSize(this.#width/4)
+            p.textAlign(p.CENTER, p.CENTER)
+            p.text( "🔧", this.#length*.02, 0)
+            
+        p.pop()
     }
 
     /** adds crack on the provided p5 graph*/
@@ -578,10 +608,11 @@ export default class CarBody
         for (let key in this.#collisionHistory) {
             totalCollision += this.#collisionHistory[key];
         }
+  
         //if the car is crashed too much, it will be destroyed
-        let maxCollision = 20;
-        //in percentage
-        this.remainedLife = 100 - (totalCollision/maxCollision) * 100;
+        this.remainedLife = 100 - (totalCollision/this.#maxCollision) * 100;
+
+        this.remainedLife = Math.max(0,this.remainedLife)
 
         if (this.remainedLife <= 0)
         {

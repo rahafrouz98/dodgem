@@ -8,11 +8,11 @@ export default class Car
     /**This is a parent class which PlayerCar and two OpponentCar classes are extended from 
      * _engine is the instance of Matter.Engine 
     */
-    constructor(_position, _width, _length, _throttle ,_density, _engine, _color, _name="", _smoker = false , _carIndex=0 ,_startDirection=0)
+    constructor( _p,_position, _width, _length, _throttle ,_density, _engine, _color, _name="", _smoker = false , _carIndex=0 ,_startDirection=0)
     {
         this.acceleration = 0;
         this.#throttle = _throttle;
-        this.carBody = new CarBody(_position, _length, _width,_density, _engine, _color, _name , _carIndex, _startDirection) 
+        this.carBody = new CarBody( _p ,_position, _length, _width,_density, _engine, _color, _name , _carIndex, _startDirection) 
         this.#length = _length;
         this.#width = _width;
         this.#maxSpeed = 25;
@@ -163,6 +163,51 @@ export default class Car
         //transfer the vector to the body
         let absolutePosition = Matter.Vector.add(this.carBody.physic.position, rotatedVector);
         return absolutePosition;
+    }
+
+    manageCollision(collision)
+    {
+        this.carBody.collitionHistoryManager(this.#getCollisionArea(collision.supports[0]), collision.depth);
+    }
+    /**divides the car into four parts and finds which part is collided */
+    #getCollisionArea(collisionPoint)
+    {
+        //coordinate of collision point relatrive to center of the body in world coordination (not rotated)
+        let collisionVector = Matter.Vector.create(collisionPoint.x-this.carBody.physic.position.x,
+                                                   collisionPoint.y-this.carBody.physic.position.y)
+        //rotated vector to be coordinated with the car when its angle is zero
+        collisionVector = Matter.Vector.rotate(collisionVector, -this.carBody.physic.angle)
+
+        if(collisionVector.x >= this.#length/4 && Math.abs(collisionVector.y) <= this.#width/4)
+        {
+            return "front";
+        }
+        if(collisionVector.x >= this.#length/4 && collisionVector.y >= this.#width/4)
+        {
+            return "front-right";
+        }
+        if(Math.abs(collisionVector.x) <= this.#length/4 && collisionVector.y >= this.#width/4)
+        {
+            return "right";
+        }
+        if(collisionVector.x <= -this.#length/4 && collisionVector.y >= this.#width/4)
+        {
+            return "back-right";
+        }
+        if(collisionVector.x <= -this.#length/4 && Math.abs(collisionVector.y) <= this.#width/4)
+        {
+            return "back";
+        }
+        if(collisionVector.x <= -this.#length/4 && collisionVector.y <= -this.#width/4)
+        {
+            return "back-left"
+        }
+        if(Math.abs(collisionVector.x) <= this.#length/4 && collisionVector.y <= -this.#width/4)
+        {
+            return "left"
+        }
+        return "front-left";
+        
     }
 }
 

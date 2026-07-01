@@ -17,7 +17,7 @@ export default class Smoker
     { 
         if(_acceleration > 0.005 )
         {
-            let batchSize = _acceleration/this.#maxAcceleration * 5; 
+            let batchSize = _acceleration/this.#maxAcceleration *1.5; 
             for(let i = 0; i < batchSize; i++)
             {
                 
@@ -32,7 +32,7 @@ export default class Smoker
     draw(p)
     {
         this.#smokeCloude.forEach(particle => {
-            particle.drawSmoke(p);
+            particle.drawEngineSmoke(p);
         });
 
         this.#update();

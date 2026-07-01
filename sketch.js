@@ -3,7 +3,7 @@ import ParkingBay from "./ParkingBay.js"
 import Guard from "./Guard.js"
 import OpponentCarA from "./OpponentCarA.js"
 import OpponentCarB from "./OpponentCarB.js"
-import {collisionActiveManeuver,collisionInstanteManeuver, collisionSpark} from "./eventCallBacks.js"
+import {collisionActiveManeuver,collisionInstanteManeuver, collisionSpark, collisionPulse} from "./eventCallBacks.js"
 
 let {Engine, Events} = Matter
 
@@ -20,7 +20,7 @@ const sketch = (p)=>
     let guard;
     let opponentCars=[]
     let numberOfOpponentCars =  4;
-    let mode =3;
+    let mode =1;
     let sparks=[]
 
     p.setup = ()=>
@@ -28,8 +28,8 @@ const sketch = (p)=>
         p.createCanvas(1400, 700);
         let barrierThickness = 10;
         parkingBay = new ParkingBay( barrierThickness, barrierThickness,
-                                    p.width/5, p.height-(barrierThickness*2), engine);
-        guard = new Guard(25,25, 1375,675, barrierThickness, engine);
+                                    p.width/4, p.height-(barrierThickness*2), engine);
+        guard = new Guard(p,25,25, 1375,675, barrierThickness, engine);
         //spawn the opponent cars at random places inside the parking bay(start zone)
         spawnOpponentCars(numberOfOpponentCars);
     }
@@ -52,7 +52,7 @@ const sketch = (p)=>
 
         manageSparks()
         
-        guard.draw(p);
+        guard.draw();
     
     }
     
@@ -72,7 +72,7 @@ const sketch = (p)=>
         if(!playerCar && !isOverlapped( _x, _y, carLength) && parkingBay.isInStartZone(_x,_y))
         {
             let carPosition = {x:_x,y:_y};
-            playerCar= new PlayerCar(carPosition, carLength, carWidth , engine);
+            playerCar= new PlayerCar(p,carPosition, carLength, carWidth , engine);
         }
     }
 
@@ -115,11 +115,11 @@ const sketch = (p)=>
 
         if(cartype == "A")
         {
-            opponentCars.push(new OpponentCarA({x:_x, y:_y}, carLength, carWidth ,engine, opponentCars.length, startAngle))
+            opponentCars.push(new OpponentCarA(p,{x:_x, y:_y}, carLength, carWidth ,engine, opponentCars.length, startAngle))
         }
         else
         {
-            opponentCars.push(new OpponentCarB({x:_x, y:_y}, carLength, carWidth ,engine, opponentCars.length, startAngle))
+            opponentCars.push(new OpponentCarB(p,{x:_x, y:_y}, carLength, carWidth ,engine, opponentCars.length, startAngle))
         }
         
     }
@@ -151,11 +151,17 @@ const sketch = (p)=>
         }
     }
     /*#################################### Event Listeners ##############################################*/
+    /**it is an event listerner for instante action when collision happens
+     * it manages collision maneuver, sparking and adding collision data to the car instances
+     */
     Events.on(engine, 'collisionStart', (event)=>
         {
             collisionInstanteManeuver(event,opponentCars);
-            collisionSpark(event, sparks);
+            collisionSpark(event, sparks, opponentCars, playerCar);
+            collisionPulse(event, guard);
         });
+    /**This event listenr is applied to toogle the direction of cars when they are stuck
+ */
     Events.on(engine, 'collisionActive', (event)=>collisionActiveManeuver(event,opponentCars));
 }
 new p5(sketch);

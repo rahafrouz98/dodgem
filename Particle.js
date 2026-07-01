@@ -38,7 +38,7 @@ export default class Particle
         this.#life++;
 
     }
-    drawSmoke(p)
+    drawEngineSmoke(p)
     {
         this.alpha = p.map(this.#life, 0, this.#maxLife , this.#startAlpha, 0)
 
@@ -79,6 +79,26 @@ export default class Particle
         {
             this.#x += (p.random()*2-1) ;
             this.#y += (p.random()*2-1) ;
+        }
+    }
+
+    drawBurningSmoke(p)
+    {
+        this.alpha = p.map(this.#life, 0, this.#maxLife , this.#startAlpha, 0)
+
+        p.push();
+            p.noStroke();
+            p.fill(50,50,50,this.alpha);
+            p.translate(this.#x, this.#y);
+            p.ellipse(0, 0, this.#radius, this.#radius);
+        p.pop();
+
+        this.#life++;
+    
+        if(this.#isFlow)
+        {
+            this.#x += p.noise(this.#life*.1)*2-1;
+            this.#y += p.noise(this.#life*.1+.1)*2-1 ;
         }
     }
 

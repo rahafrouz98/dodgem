@@ -5,9 +5,9 @@ export default class PlayerCar extends Car
     /**It is a class for the PlayerCar
      * _engine is the instance of Matter.Engine 
     */
-    constructor(_position, _width, _Length ,_engine)
+    constructor(_p,_position, _width, _Length ,_engine)
     {
-        super(_position, _width, _Length, .0001 , 0.0005, _engine, [40,127,240] , "playerCar")
+        super(_p,_position, _width, _Length, .0001 , 0.0005, _engine, [40,127,240] , "playerCar")
     }
     //it takes p as the instance of p5
     steering(p)

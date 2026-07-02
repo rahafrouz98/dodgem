@@ -643,7 +643,7 @@ export default class CarBody
     /**this function will create a BurningSmoke instance when it is called from the collision manager */
     #destroyCar()
     {
-        this.#burningSmoke = new BurnningSmoke(this.#p, this.#width/4);
+        this.#burningSmoke = new BurnningSmoke(this.#p, this.#width/3);
     }
     
 

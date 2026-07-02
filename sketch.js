@@ -284,6 +284,49 @@ const sketch = (p)=>
 new p5(sketch);
 
 /**
+Commentary:
+This app uses ESM for modularity. The main file contains the p5 sketch in instance mode and initializes  
+the instances of the app’s classes. 
+
+The Guard class represents the barrier around the arena. Inside this class a method simulates the pulse 
+on the walls when they are hit by cars by implementing  2D Perlin noise from p5 library.
+
+The Car class moves forward and backward by increasing its acceleration and applying this acceleration as 
+force in Matter.js in the direction of the car wheels. The force is applied to the front of the car to simulate 
+a front-wheel-drive car and makes the car to turn when the wheels are angled.
+
+PlayerCar and OpponentCar  are two classes that extend Car. From OpponentCar class two other classes are inherit:
+ 1-  CarA has standard throttling and density. 
+ 2- CarB  with heavier density and lower throttling. 
+
+Trajectory path for opponent cars is a sine wave and is implemented by keeping the amplitude, frequency and time 
+of the sine formula in an object as a database for the trajectory path. At each frame the angle of the wheels is 
+updated based on the sine wave. 
+
+For 90-degree turn, there is an object to store the status of the action, including the car’s target angle. 
+At each frame,  the status is checked, and if it is active, the wheels’ angle are updated by a specified increment 
+or decrement. This process repeated at each frame until the car reaches the target angle. 
+
+CarBody is used to define the car body in Matter.js, and provides tools for drawing the car, updating collision
+data, and animating glass cracks and headlight and taillight damage. To dynamically update the cracks, the graphics
+instances and the clipping tool of p5 library are used to create layers for the glasses and lights and clip them to
+the shape of the related component to prevent them from overflowing. These layers are updated at each collision. 
+
+Extensions:
+1-	I used an object to record the collision history of each side of the car. When the value of a specific side reaches a 
+threshold, the related headlight or taillight is damaged. This methos can be used for future extension to apply related 
+collapse on the sides of the car.
+2-	 When the total collision reaches its threshold,  the car stops moving , and fire and smoke effects is displayed on 
+the car. The fire remains on the car even if the car is moved by the force of other cars. It is simulated using Perlin 
+noise. Each instance is created from multiple array of particles (I call them seeds), each one simulate a stream of smoke.
+3-	I applied a smoke emitter to the slow cars, CarB class, and when its acceleration reaches a specific level, it starts
+ emitting smoke. 
+4-	I applied tools to dynamically change the game mode , the number of cars and reset the game properly, by removing bodies
+ and constraints and clears the Matter Engine.
+
+ */
+
+/**
  * References:
  * [1]- https://www.html5gamedevs.com/, "Identify objects in collisionstart". Internet: 
  * https://www.html5gamedevs.com/topic/39536-identify-objects-in-collisionstart/, 2018 [Accessed July 1st]

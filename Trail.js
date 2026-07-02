@@ -75,9 +75,6 @@ export default class Trail
             }
         }
     }
-
-    
-
 }
 
 

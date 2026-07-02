@@ -283,13 +283,20 @@ const sketch = (p)=>
 }
 new p5(sketch);
 
+/**
+ * References:
+ * [1]- https://www.html5gamedevs.com/, "Identify objects in collisionstart". Internet: 
+ * https://www.html5gamedevs.com/topic/39536-identify-objects-in-collisionstart/, 2018 [Accessed July 1st]
+ * [2]- https://stackoverflow.com/, "Matter.Query.region not returning any collisions even though the bound is clearly intersecting other bodies". Internet:
+ *  https://stackoverflow.com/questions/70624648/matter-query-region-not-returning-any-collisions-even-though-the-bound-is-clearl, 2022 [Accessed July 1st]
+ * [3]- the coding train, "Matter.js deleting bodies". Internet:
+ * https://thecodingtrain.com/tracks/the-nature-of-code-2/noc/6-physics-libraries/3-matterjs-deleting-bodies, 2017 [Accessed July 1st]
+ * [4]- Github, "How to stop, clear & destroy Matter.js instance?". Internet:
+ * https://github.com/liabru/matter-js/issues/564, 2018 [Accessed July 1st]
+ * [5]- Stack Owerflow, "How to completely stop/reset/reinitialize Matter.js canvas/world/engine/instance", Internet: 
+ *https://stackoverflow.com/questions/60195772/how-to-completely-stop-reset-reinitialize-matter-js-canvas-world-engine-instance, 2020 [Accessed July 1st]
+*/
 
-/**https://www.html5gamedevs.com/topic/39536-identify-objects-in-collisionstart/ for adding label
- https://github.com/liabru/matter-js/issues/744 for parent
- https://stackoverflow.com/questions/70624648/matter-query-region-not-returning-any-collisions-even-though-the-bound-is-clearl for query.region
- https://thecodingtrain.com/tracks/the-nature-of-code-2/noc/6-physics-libraries/3-matterjs-deleting-bodies removig bodies
- https://github.com/liabru/matter-js/issues/564 to reset engine
- https://stackoverflow.com/questions/60195772/how-to-completely-stop-reset-reinitialize-matter-js-canvas-world-engine-instance
- */
+
 
 

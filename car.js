@@ -234,7 +234,3 @@ export default class Car
         
     }
 }
-
-/**
- https://freesvg.org/top-view-car-vector for cars svg
- */

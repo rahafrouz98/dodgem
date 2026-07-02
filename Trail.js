@@ -2,6 +2,9 @@ import Particle from "./Particle.js"
 
 export default class Trail
 {
+    /**this is a constructor for simulating the track of tires on the ground when the car is in turning with enough speed
+     * _width: number, _maxSpeed: number
+     */
     constructor(_width, _maxSpeed)
     {
         this.#width = _width;
@@ -19,7 +22,7 @@ export default class Trail
         if(_speed > 3 && _rotationSpeed > 0.02 )
         {
             //max opacity will be when the speed is maximum
-            let startAlpha = _speed/this.#maxSpeed *this.#maxAlpha;
+            let startAlpha = (_speed/this.#maxSpeed) *this.#maxAlpha;
             //left track particles insertion
             for(let i = 0; i < 5; i++)
             {
@@ -36,17 +39,21 @@ export default class Trail
             } 
         }
     }
-    draw(p)
+
+    /**draws the trails and updates them at each frame
+     * _p: p5 instance
+     */
+    draw(_p)
     {
         this.#leftTrack.forEach(particle => {
-            particle.drawTrail(p);
+            particle.drawTrail(_p);
         });
         this.#rightTrack.forEach(particle => {
-            particle.drawTrail(p);
+            particle.drawTrail(_p);
         });
         this.#update();
     }
-    /**removes the faded particles */
+    /**removes the faded particles to prevent memory leak */
     #update()
     {
         //left

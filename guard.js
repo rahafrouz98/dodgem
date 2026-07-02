@@ -2,7 +2,9 @@ let {World, Bodies, Body} = Matter
 
 export default class Guard
 {
-    /**It takes coordinates of four corner of the guard and its thickness to construct a solid guard barrier */
+    /**It takes coordinates of the four corner of the guard and its thickness to construct a solid guard barrier 
+     * _p: p5 instance, xLeft: number, yTop: number, xRight: number, yBottom: number, thickness: number, engine: Matter.Engine instance
+    */
     constructor(_p,xLeft, yTop, xRight, yBottom, thickness, engine)
     {
         //p5 instance
@@ -12,15 +14,23 @@ export default class Guard
         //pole top-left
         this.#poleTL = Bodies.rectangle(xLeft, yTop, this.#thickness*4, this.#thickness*4,
              {isStatic: true, restitution: 0});
+        this.#poleTL.name = "barrier";
+        this.#poleTL.side = "pole";
         //pole top-right
         this.#poleTR = Bodies.rectangle(xRight, yTop, this.#thickness*4, this.#thickness*4,
              {isStatic: true, restitution: 0 });
+        this.#poleTR.name = "barrier";
+        this.#poleTR.side = "pole";
         //pole bottom-left
         this.#poleBL = Bodies.rectangle(xLeft, yBottom, this.#thickness*4, this.#thickness*4,
              {isStatic: true, restitution: 0 });
+        this.#poleBL.name = "barrier";
+         this.#poleTR.side = "pole";
         //ple bottom-right
         this.#poleBR = Bodies.rectangle(xRight, yBottom, this.#thickness*4, this.#thickness*4,
              {isStatic: true, restitution: 0 });
+        this.#poleBR.name = "barrier"
+        this.#poleBR.side = "pole";
         //top wall
         this.#barrierTop = Bodies.rectangle((xRight + xLeft)/2, yTop - this.#thickness, xRight - xLeft, this.#thickness,
         {isStatic:true, restitution: 0 });
@@ -42,10 +52,10 @@ export default class Guard
         this.#barrierLeft.side = "left"
         this.#barrierLeft.name = "barrier"
 
-        this.barrier = Body.create({isStatic:true,parts:[this.#poleTL, this.#poleTR, this.#poleBL, this.#poleBR, this.#barrierTop, 
-           this.#barrierBottom, this.#barrierRight, this.#barrierLeft]})
-        this.barrier.name = "barrier"
-        World.add(engine.world, [this.barrier]);
+        this.#barrier = Body.create({isStatic:true,parts:[this.#poleTL, this.#poleTR, this.#poleBL, this.#poleBR, this.#barrierTop, 
+          this.#barrierBottom, this.#barrierRight, this.#barrierLeft]})
+        this.#barrier.name = "barrier"
+        World.add(engine.world, [this.#barrier]);
     }
     #p;
     #poleTL;
@@ -63,8 +73,9 @@ export default class Guard
      "left": 0,
      "right": 0
     }
-    //whole barrier
-    barrier
+    #barrier
+
+    /**it draws the barrier walls and pole and simulate pulse on the walls based on the read values from the #pulseContainer */
     draw()
     {
           let p = this.#p;
@@ -88,10 +99,8 @@ export default class Guard
                p.stroke(46,114,135);
                p.strokeWeight(this.#thickness);
                //top Wall
-          
                this.#drawWall("top", this.#poleTL.position.x, this.#poleTL.position.y-this.#thickness, 
                                    this.#poleTR.position.x, this.#poleTR.position.y-this.#thickness);
-
                //bottom wall
                this.#drawWall("bottom", this.#poleBL.position.x, this.#poleBL.position.y+this.#thickness,
                                     this.#poleBR.position.x, this.#poleBR.position.y+this.#thickness);
@@ -105,14 +114,18 @@ export default class Guard
           p.pop()
         
     }
-    /**it takes the side of the barrier and the collision depth as input anf add data to the collision pulse container */
+    /**it takes the side of the barrier and the collision depth as input and adds data to the collision pulse container
+     * _side: string, _depth: number
+     */
     collisionManager(_side, _depth)
     {
         this.#pulseContainer[_side] = _depth*10000;
+        
     }
 
-    /**takes the side of the wall , start point and end point and draw it based on the existin pulse in the pulse container
-     * this function is appicable for horizontal and vertical walls only
+    /**takes the side of the wall , start point and end point and draw it based on the read value from #pulseContainer.
+    this function is only appicable for horizontal and vertical walls.
+    *_side: string, _startX: number, _startY: number, _endX: number, _endY: number
      */
     #drawWall(_side, _startX, _startY, _endX, _endY)
     {

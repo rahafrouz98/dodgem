@@ -2,23 +2,26 @@ import Car from "./Car.js"
 
 export default class PlayerCar extends Car
 {
-    /**It is a class for the PlayerCar
-     * _engine is the instance of Matter.Engine 
+    /**It is a class for the PlayerCar and inherits fron the Car
+    *_p: p5 instance, _position: {x: number, y: number}, _width: number, 
+    *_Length: number, _engine: Matter.Engine 
     */
     constructor(_p,_position, _width, _Length ,_engine)
     {
-        super(_p,_position, _width, _Length, .0001 , 0.0005, _engine, [40,127,240] , "playerCar")
+        super(_p,_position, _width, _Length, .0001 , 0.0006, _engine, [40,127,240] , "playerCar")
     }
-    //it takes p as the instance of p5
-    steering(p)
+    /**it handles the movement of the player car at each 
+     * _p: p5 instance
+    */
+    steering(_p)
     {
         //up arrow
-        if(p.keyIsDown(38))
+        if(_p.keyIsDown(38))
         {
             this.moveForward(true);
         }
         //down arrow
-        else if (p.keyIsDown(40))
+        else if (_p.keyIsDown(40))
         {
             this.moveBackward(true);
         }
@@ -28,12 +31,12 @@ export default class PlayerCar extends Car
             this.moveBackward(false);
         }
         //right arrow
-        if(p.keyIsDown(39) && (p.keyIsDown(40) || p.keyIsDown(38)))
+        if(_p.keyIsDown(39) && (_p.keyIsDown(40) || _p.keyIsDown(38)))
         {
             this.turnWheels(0.05);
         }
         //left arrow 
-        else if(p.keyIsDown(37) && (p.keyIsDown(40) || p.keyIsDown(38)))
+        else if(_p.keyIsDown(37) && (_p.keyIsDown(40) || _p.keyIsDown(38)))
         {
             this.turnWheels(-0.05);
         }

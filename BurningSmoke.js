@@ -2,8 +2,7 @@ import Particle from "./Particle.js"
 export default class BurningSmoke
 {
     /**it is a class for simulating smoke from a burning car
-     * _p is a reference to p5 object
-     * the positin of the smoke
+     * _p:p5 object, _emitterSize: number
      */
     constructor( _p, _emitterSize)
     {
@@ -36,7 +35,9 @@ export default class BurningSmoke
             
         }
     }
-    //ads smoke particles and updte the position
+    /**updte the position of the burning and ads smoke particles and 
+     * _emitterPosition: {x:number, y:number}
+    */
     emitteSmoke( _emitterPosition)
     {
         let p = this.#p;
@@ -59,8 +60,10 @@ export default class BurningSmoke
         })
     }
 
-    draw(p)
+    /**draws the smoke particles at each frame and update arrays of seed*/
+    draw()
     {
+        let p = this.#p;
         this.#smokeSeeds.forEach(seed => {
             seed.particles.forEach(particle => {
                 particle.drawBurningSmoke(p);
@@ -70,8 +73,8 @@ export default class BurningSmoke
      
         this.#update();
     }
-    
-    #update(p)
+    /**removes the faded particles to prevent memory leak */
+    #update()
     {
         this.#smokeSeeds.forEach((seed)=>
         {

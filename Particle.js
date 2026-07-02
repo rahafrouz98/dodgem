@@ -1,7 +1,7 @@
 export default class Particle
 {
-    /**This Particle class is used in Trail, Smoker and sparker
-     * for trail and smoke particles the _isFlow will be true to sumulate the drifting particles
+    /**This Particle class is used in Trail, Smoker and Sparker and BurningSmoke.
+    For sparks and smoke particles the _isFlow will be true to sumulate the drifting particles
      */
     constructor(_x, _y, _radius, _startAlpha, _angle=0 ,_isFlow = false)
     {
@@ -19,8 +19,8 @@ export default class Particle
     #y;
     #radius;
     #startAlpha;
-    #angle
-    alpha
+    #angle;
+    alpha;
 
     drawTrail(p)
     {

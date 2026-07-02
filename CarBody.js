@@ -4,7 +4,11 @@ let {World, Bodies, Body} = Matter;
 
 export default class CarBody
 {
-    /**this is a class for creating the car body in matter js and rendeing it using p5 */
+    /**this is a class for creating the car body and rendeing it using p5. Its instance is used in the Car class as a property
+    *_p:p5 instance, _position:{x:number, y:number}, _length: number, _width: number, _density:number,
+    _engine: Matterjs Engine instance, _color: [number,number,number], name:string, 
+    _carIndex: number, _startDirection: number
+    */
     constructor(_p,_position, _length, _width, _density, _engine, _color, _name="",_carIndex=0 , _startDirection=0)
     {    
         this.#color = _color;
@@ -62,6 +66,7 @@ export default class CarBody
     #leftHeadlightCrack;
     #rightTaillightCrack;
     #leftTaillightCrack;
+    //it holds the sum of the collisions for each side to be used for drawings
     #collisionHistory={
         "front":0,
         "front-right":0,
@@ -72,6 +77,7 @@ export default class CarBody
         "left":0,
         "front-left":0
     }
+    //this is an object of methods for updating the cracks on the windows, headlights and taillights
     #crackOnWindow={
         "front": ()=>{this.#updateWindowCrack(this.#frontWindowCrack)},
         "back": ()=>{this.#updateWindowCrack(this.#backWindowCrack)},
@@ -86,14 +92,16 @@ export default class CarBody
         "back-left": ()=>{
             this.#collisionHistory["back-left"] > this.#lightCollisionthreshold && this.#updateLightCrack(this.#leftTaillightCrack)}
     }
+    //this is the threshold where the car stop working abd burning effect starts
     #maxCollision = 150;
+    //this is the threshold of collision where the lights get dark (broken)
     #lightCollisionthreshold = 10;
     physic;
     remainedLife;
 
  
 
-    /**it generates the vertices  of the shape */
+    /**it generates the vertices  of the car body and retirns as an array */
     #generateVertices()
     {
         let vertices = [];
@@ -135,6 +143,9 @@ export default class CarBody
         return vertices;
     }
 
+    /**it generates an empty p5 graph based on the provided width and height. 
+     * the graph will be used as a layer to simulate cracks
+     */
     #initiallizeCrackGraph = (w,h)=>
     {
         let p = this.#p;
@@ -146,7 +157,7 @@ export default class CarBody
         return graph
     }
 
-
+    /**draw car components and burning smoke */
     draw()
     {
         let p = this.#p;
@@ -181,7 +192,7 @@ export default class CarBody
         }
 
     }
-
+    //draws car body
     #drawBody(x, y)
     {
         let p = this.#p;
@@ -202,6 +213,7 @@ export default class CarBody
     {
         let p = this.#p;
         p.push();
+            //the blend mode is used to darken the color pixels from the drawBody and simulate the roof
             p.blendMode(p.MULTIPLY)
             p.fill(200,200,200);
             p.beginShape();
@@ -559,49 +571,56 @@ export default class CarBody
             p.noStroke();
             p.fill(0);
             p.rect(-this.#length/8, -this.#width/3, this.#length/15, this.#width/1.5)
-            p.fill(255,0,0);
-            let barLength = this.#width/1.5 *((100-this.remainedLife)/100);
+            let barLength = this.#width/1.5 *((this.remainedLife)/100);
+            barLength > 20 ? p.fill(0,255,0) :  p.fill(255,0,0) ;
             p.rect(-this.#length/8, -this.#width/3, this.#length/15, barLength);
-            p.textSize(this.#width/4)
-            p.textAlign(p.CENTER, p.CENTER)
-            p.text( "🔧", this.#length*.02, 0)
+            p.textSize(this.#width/4);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.text( "🔧", this.#length*.02, 0);
             
         p.pop()
     }
 
-    /** adds crack on the provided p5 graph*/
-    #updateWindowCrack(crackGraph)
+    /** adds crack on the provided p5 graph. It will be added as a layer to the related component
+     *_crackGraph: p5 graphics inatance
+    */
+    #updateWindowCrack(_crackGraph)
     {
         let p = this.#p;
-        let x = p.random(crackGraph.width);
-        let y = p.random(crackGraph.height);
-        crackGraph.beginShape();
-        crackGraph.vertex(x,y);
-        for(let i = 0; i < crackGraph.width*crackGraph.height*2; i+=20)
+        let x = p.random(_crackGraph.width);
+        let y = p.random(_crackGraph.height);
+        _crackGraph.beginShape();
+        _crackGraph.vertex(x,y);
+        for(let i = 0; i < _crackGraph.width*_crackGraph.height*2; i+=20)
         {
             x+=p.noise(i/10)*2-1;
             y+=p.noise(x/10)*2-1;
-            crackGraph.vertex(x,y);
+            _crackGraph.vertex(x,y);
         }
-        crackGraph.endShape();
+        _crackGraph.endShape();
 
-        return crackGraph;
+        return _crackGraph;
     }
-
-    #updateLightCrack(lightFilter)
+    /**apply a dark color on th light graph. it will be added as a layer to the related component
+     * 
+     */
+    #updateLightCrack(_burntLightGraph)
     {
         let p = this.#p;
-        lightFilter.background(50,50,50)
-        return lightFilter;
+        _burntLightGraph.background(50,50,50)
+        return _burntLightGraph;
     }
 
-    /**it takes the side of the collision and the depth of the collision. Updates the collitionHistory and cracks */
-    collitionHistoryManager(collisionSide, depth)
+    /**it takes the side of the collision and the depth of the collision. Updates the collitionHistory 
+     and cracks on the related graphs
+     * _collisionSide: string, _depth: number
+     */
+    collitionHistoryManager(_collisionSide, _depth)
     {
-        this.#collisionHistory[collisionSide] += depth;
+        this.#collisionHistory[_collisionSide] += _depth;
 
         /*#################### crack on windows##########################*/
-        this.#crackOnWindow[collisionSide]?.();
+        this.#crackOnWindow[_collisionSide]?.();
 
         /*#################### update and check the remained life ###################*/
         let totalCollision = 0;
@@ -630,31 +649,33 @@ export default class CarBody
 
 
     /**it is a customized function for generating curve vertices based on the center of the arc, 
-     * radious and start and end angles and retuen the start and end points of the curve.
-     * It is used to create curved windows with straight edges
-      */
-    #vertexCurve(x,y,radious,startAngle, endAngle)
+     radius and start and end angles and retuen the start and end points of the curve.
+     It is used to create curved windows with straight edges (vertexCurve in p5 would not provide straight edges)
+     *_x, _y: center of the arc, *_radius: radius of the arc
+     *_startAngle, _endAngle: angles of the arc in radians
+    */
+    #vertexCurve(_x, _y, _radius, _startAngle, _endAngle)
     {
         let p = this.#p;
-        p.vertex(x+radious*Math.cos(startAngle), y+radious*Math.sin(startAngle));
+        p.vertex(_x+_radius*Math.cos(_startAngle), _y+_radius*Math.sin(_startAngle));
 
-        if(startAngle < endAngle) 
+        if(_startAngle < _endAngle) 
         {
-            for(let angle = startAngle; angle <= endAngle; angle += (endAngle-startAngle)/100)
+            for(let angle = _startAngle; angle <= _endAngle; angle += (_endAngle-_startAngle)/100)
             {
-                p.vertex(x+radious*Math.cos(angle), y+radious*Math.sin(angle));
+                p.vertex(_x+_radius*Math.cos(angle), _y + _radius*Math.sin(angle));
             }
         }
         else
         {
-            for(let angle = startAngle; angle >= endAngle; angle += (endAngle-startAngle)/100)
+            for(let angle = _startAngle; angle >= _endAngle; angle += (_endAngle-_startAngle)/100)
             {
-                p.vertex(x+radious*Math.cos(angle), y+radious*Math.sin(angle));
+                p.vertex(_x+_radius*Math.cos(angle), _y + _radius*Math.sin(angle));
             }
         }
         //it returns the points slightly more toward the positive x (related to the real points) to cover the whole top curve
-        let startVertex ={x:x+radious*Math.cos(startAngle)*1.015, y:y+radious*Math.sin(startAngle)};
-        let endVertex = {x:x+radious*Math.cos(endAngle)*1.015, y:y+radious*Math.sin(endAngle)} ;
+        let startVertex ={x:_x + _radius*Math.cos(_startAngle)*1.015, y: _y + _radius*Math.sin(_startAngle)};
+        let endVertex = {x:_x + _radius*Math.cos(_endAngle)*1.015, y: _y + _radius*Math.sin(_endAngle)} ;
         
         return [startVertex, endVertex];
     }

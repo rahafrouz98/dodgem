@@ -4,20 +4,22 @@ let {Body} = Matter
 
 export default class OpponentCar extends Car
 {
-    /**This is a parrent class for opponent cars. It inherits from Cars and add a specific method of steering for opponent cars
-    *_engine is the instance of Matter.Engine 
-    */
+    /**This is a parrent class for opponent cars A and B. It inherits from Cars and add a specific method of steering for opponent cars
+    *_p:p5 instance, _position:{x:number, y:number}, _width: number, _length: number, _throttle: number, _density:number  
+    *_engine: Matterjs Engine instance, _color:[number, number, number], _name: string, _smoker: boolean,
+    * _carIndex: number, _startDirection: number
+    */ 
     constructor(_p,_position, _width, _length, _throttle ,_density, _engine, _color, _name ="" , _smoker = false, _carIndex =0, _startDirection=0)
     {      
         super(_p,_position, _width,_length, _throttle , _density, _engine, _color,_name, _smoker ,_carIndex ,_startDirection);
         this.#isMovingForward= Math.random() < 0.5 ? true : false;
     }
 
-    //set a random direction of the opponent car
+    //set a random heading of the opponent car
     #isMovingForward = Math.random() < 0.5? true: false;
     //this object is used to keep the status of 90 degree turning for the car
     //staus 0 means it is not active, 1 means it is turning right, -1 means it is turning left
-    //initial angle is the angle of the car that it start to turning 90 degree
+    //initial angle is the angle of the car when it start to turn 90 degree
     #turn90 ={
         status:0,
         initialAngle:undefined
@@ -34,7 +36,7 @@ export default class OpponentCar extends Car
         timeFragment:undefined,
         phase: undefined,
     }
-    //resets the parameters of the trajectory path
+    /**turns on the trajectory path and resets its parameters */
     #resetTrajictoryPath()
     {
         this.#trajictoryPath.isActive = true;
@@ -44,7 +46,7 @@ export default class OpponentCar extends Car
         let phaseSelector = Math.random() <0.5?0:1
         this.#trajictoryPath.phase = phaseSelector==0 ? 0 : Math.PI;
     }
-    //It activate and deactivate the action of turning 90 degree
+    /**It activate the action of turning 90 degree*/
     #resetTurn90()
     {
         //randomly set turn90 status to turn right(1) or left(-1)
@@ -52,10 +54,13 @@ export default class OpponentCar extends Car
         this.#turn90.status = isTurnRight? 1:-1;
         this.#turn90.initialAngle=this.carBody.physic.angle;
     }
-
+    /**handles the movement of opponent cars based on the provided mode
+     * mode: number 1 - stop, 2 - forward/backward and turn 90 at car-car collision,
+     *  3 - sine movement and turn 90 at car-car collision
+     */
     steering(mode)
     {
-        //makes all cars steady when switch from mode 2 or 3 to mode 1
+        //makes all cars stop when switch from mode 2 or 3 to mode 1
         if(mode == 1 )
         {
             this.#trajictoryPath.isActive = false;
@@ -65,6 +70,7 @@ export default class OpponentCar extends Car
         }
         //makes sure in mode 2 the wheel is straight if it has been in mode 3 before
         mode == 2 && this.turnWheels(0);
+
         //the car will move forward or backward 
         if(mode == 2 || mode == 3)
         {
@@ -72,12 +78,12 @@ export default class OpponentCar extends Car
             this.manageTurn90()
         }
 
-        //the car will move on the trajectory path based on the parameters of the this.##trajictoryPath
+        //the car will move on the trajectory path based on the parameters of the this.#trajictoryPath
         mode ==3 && this.sineMovement();
 
         //car will turn 90 degree to left or right based on the status of this.#turn90
     }  
-    /**Toggle the car froom moving forward to backward */
+    /**Toggle the car from moving forward to backward */
     toggleHeading()
     {  
         this.acceleration=0
@@ -85,13 +91,13 @@ export default class OpponentCar extends Car
         //it resets the trajectory path with new phase to prevent cars from being stuck and keep hitting barriers
         this.#resetTrajictoryPath();
     }
-
+    /**starts turning 90 and deactivates trajictory path*/
     setOnTurn90()
     {
         this.#resetTurn90();
         this.#trajictoryPath.isActive = false;
     }  
-
+    /**is called at each frame and if turn90 is active will update the wheel angle  */
     manageTurn90()
     {
         if(this.#turn90.status !== 0)
@@ -109,7 +115,9 @@ export default class OpponentCar extends Car
             this.turnWheels(0.02*this.#turn90.status); 
         }
     }
-
+    /** is called at each drame and if turn90 is not active updates the wheel angle base don the sine formula. Time and frequency
+     of sine formula are taken from this.#trajictoryPath
+    */
     sineMovement()
     {
         if(this.#turn90.status===0 )

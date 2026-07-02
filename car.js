@@ -5,8 +5,10 @@ import Smoker from "./Smoker.js";
 
 export default class Car
 {
-    /**This is a parent class which PlayerCar and two OpponentCar classes are extended from 
-     * _engine is the instance of Matter.Engine 
+    /**This is the parent class pf PlayerCar and OpponentCar.
+    *_p:p5 instance, _position:{x:number, y:number}, _width: number, _length: number, _throttle: number, _density:number  
+    *_engine: Matterjs Engine instance, _color:[number, number, number], _name: string, _smoker: boolean,
+    * _carIndex: number, _startDirection: number
     */
     constructor( _p,_position, _width, _length, _throttle ,_density, _engine, _color, _name="", _smoker = false , _carIndex=0 ,_startDirection=0)
     {
@@ -32,27 +34,32 @@ export default class Car
     //It is needed to limit the amount of force on car so it does not act up in collision with
     //barriers when the car keep throttling
     #maxAcceleration;
-    acceleration;
     #maxSpeed;
     #rightTrackRelativePosition;
     #leftTrackRelativePosition;
     #emitterRelativePosition
-    carBody;
+    //this object holds the data related to the angle of the wheel
     wheels={
         increment:0,
         angle:0,
         maxAngle: Math.PI/4, // absolute
         decrement:0.3
     }
-    draw(p)
+    acceleration;
+    carBody;
+
+    /**draw the carBody, smoker and trail instances at each frame and update the physical properties of carBody.physic in Matterjs
+     * _p: p5 instance
+     */
+    draw(_p)
     {
-        this.update();
-        this.#trail.draw(p);
-        this.#smoker?.draw(p);
-        this.carBody.draw(p);
+        this.#update();
+        this.#trail.draw(_p);
+        this.#smoker?.draw(_p);
+        this.carBody.draw(_p);
     }
    
-    update()
+    #update()
     {
         //check if there is any life remained
         if (this.carBody.remainedLife <=0 )return;
@@ -85,14 +92,16 @@ export default class Car
         //if smoker is operational
         this.#smoker?.emmitSmoke(this.#getAbsolutePosition(this.#emitterRelativePosition), Math.abs(this.acceleration))
     }
-    
-   moveForward(isAccelerating)
+    /**adds to the acceleration positively to move the car forward
+     * _isAccelerating: boolean
+     */
+   moveForward(_isAccelerating)
     {
-        if(isAccelerating && this.acceleration < this.#maxAcceleration)
+        if(_isAccelerating && this.acceleration < this.#maxAcceleration)
         {
             this.acceleration += this.#throttle ;
         }
-        else if (isAccelerating && this.acceleration >= this.#maxAcceleration)
+        else if (_isAccelerating && this.acceleration >= this.#maxAcceleration)
         {
             this.acceleration=this.#maxAcceleration; 
         }
@@ -102,13 +111,16 @@ export default class Car
         }
     }
 
-    moveBackward(isAccelerating)
+    /**adds to the acceleration negatively to move the car backward
+     * _isAccelerating: boolean
+     */
+    moveBackward(_isAccelerating)
     {
-        if(isAccelerating && -this.acceleration < this.#maxAcceleration )
+        if(_isAccelerating && -this.acceleration < this.#maxAcceleration )
         {
            this.acceleration -= this.#throttle/2 ;
         }
-        else if (isAccelerating && -this.acceleration >= this.#maxAcceleration)
+        else if (_isAccelerating && -this.acceleration >= this.#maxAcceleration)
         {
              this.acceleration=-this.#maxAcceleration; 
         }
@@ -118,13 +130,13 @@ export default class Car
         }
     }
 
-
+    /**is called at each frame and based on the data in the this.wheels updates the whell angle */
     #wheelManager()
     {
         if(this.wheels.increment !==0)
         {
             let newAngle = this.wheels.angle +this.wheels.increment;
-            //new wheel angle will be maximum equal to the this.#wheels.maxAngle
+            //new wheel angle will be maximum equal to the this.wheels.maxAngle
             if(newAngle > 0)
             {
                 newAngle = Math.min(newAngle, this.wheels.maxAngle)
@@ -152,32 +164,41 @@ export default class Car
         }
 
     }
-    /**it is an interface method that is used in the child classes to change the status of wheels for turning right and left*/
-    turnWheels(increment)
+    /**it is an interface method that is used in the child classes to change the status of wheels for turning right and left
+     * _increment: number(radian)
+    */
+    turnWheels(_increment)
     {
-        this.wheels.increment = increment;
+        this.wheels.increment = _increment;
     }
     
-    /**returns the absolute postion of the given relative position (relative to the venter of the car) */
-    #getAbsolutePosition(relativePosition)
+    /**returns the absolute postion of the given relative position (relative to the venter of the car) 
+     * _relativePosition: Matter.Vector
+    */
+    #getAbsolutePosition(_relativePosition)
     {
         //rotate the relative position of the track with the car angle
-        let rotatedVector = Matter.Vector.rotate(relativePosition, this.carBody.physic.angle)
+        let rotatedVector = Matter.Vector.rotate(_relativePosition, this.carBody.physic.angle)
         //transfer the vector to the body
         let absolutePosition = Matter.Vector.add(this.carBody.physic.position, rotatedVector);
         return absolutePosition;
     }
-
-    manageCollision(collision)
+    /**updates the collision history of the carBody
+     * _collision: Matterjs Collision instance
+     */
+    manageCollision(_collision)
     {
-        this.carBody.collitionHistoryManager(this.#getCollisionArea(collision.supports[0]), collision.depth);
+        this.carBody.collitionHistoryManager(this.#getCollisionArea(_collision.supports[0]), _collision.depth);
     }
-    /**divides the car into four parts and finds which part is collided */
-    #getCollisionArea(collisionPoint)
+
+    /**divides the car into four parts and finds which part is collided based on the provided collision point
+     * _collisionPoint{x:number, y:number}
+     */
+    #getCollisionArea(_collisionPoint)
     {
         //coordinate of collision point relatrive to center of the body in world coordination (not rotated)
-        let collisionVector = Matter.Vector.create(collisionPoint.x-this.carBody.physic.position.x,
-                                                   collisionPoint.y-this.carBody.physic.position.y)
+        let collisionVector = Matter.Vector.create(_collisionPoint.x-this.carBody.physic.position.x,
+                                                   _collisionPoint.y-this.carBody.physic.position.y)
         //rotated vector to be coordinated with the car when its angle is zero
         collisionVector = Matter.Vector.rotate(collisionVector, -this.carBody.physic.angle)
 

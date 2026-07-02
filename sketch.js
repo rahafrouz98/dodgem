@@ -51,7 +51,7 @@ const sketch = (p)=>
             car.steering(mode);
         })
 
-        manageSparks()
+        manageSparks();
         
         guard.draw();
     
@@ -78,17 +78,23 @@ const sketch = (p)=>
     }
     
     /*################################# functions ###################################*/
-    let spawnPlayerCar =(_x,_y, carWidth, carLength)=>
+    /** checks the provided location and if the car with specified length and width fit in .
+    it creates a player car at that point
+     * -x: number, -y: number, _carWidth: number, _carLength: number 
+      */
+    let spawnPlayerCar =(_x,_y, _carWidth, _carLength)=>
     {
         //if there is no overlap with other existing cars and it is not already existing and the mouse is inside start zone
-        if(!playerCar && !isOverlapped( _x, _y, carLength/2) && parkingBay.isInStartZone(_x,_y))
+        if(!playerCar && !isOverlapped( _x, _y, _carLength/2) && parkingBay.isInStartZone(_x,_y))
         {
             let carPosition = {x:_x,y:_y};
-            playerCar= new PlayerCar(p,carPosition, carWidth, carLength , engine);
+            playerCar= new PlayerCar(p,carPosition, _carWidth, _carLength , engine);
         }
     }
 
-    //checks if the an area of length equal to _carLength and at given x and y has any car in it
+    /**checks if the area with provided center and twice of provided dimension has any other body with its center inside that area
+     * -x: number, _y: number, _length: number
+    */
     let isOverlapped =(_x,_y, _length)=>
     {
         //list of bodies pressented at the point (_x,_y)
@@ -107,9 +113,10 @@ const sketch = (p)=>
         if(collidedBodiesList.length != 0) return true;
         return false;
     }
-    //inserts the opponent cars where there is no overlap with other cars
-    //Based on game mode provides start angle to opponents
-    let insertOpponentCar =(cartype, carLength, carWidth)=>
+    /**inserts the opponent cars where there is no overlap with other cars. 
+    in Mode 1, cars will start with zero angle and in mode 2 and 3 they have random directions
+     * -ca*/
+    let insertOpponentCar =(_cartype, _carLength, _carWidth)=>
     {
         let _x, _y;
         while(true)
@@ -117,7 +124,7 @@ const sketch = (p)=>
             _x = p.random(60, p.width/5-60);
             _y = p.random(60, p.height-60);
 
-            if(!isOverlapped(_x, _y, carLength))
+            if(!isOverlapped(_x, _y, _carLength))
             {
                 break;
             }
@@ -125,18 +132,19 @@ const sketch = (p)=>
         //sets the start angle to zero for mode 1 and random angle for mode 2 and 3
         let startAngle = mode == 1 ? 0 : p.random(0,Math.PI*2);
 
-        if(cartype == "A")
+        if(_cartype == "A")
         {
-            opponentCars.push(new OpponentCarA(p,{x:_x, y:_y}, carLength, carWidth ,engine, opponentCars.length, startAngle))
+            opponentCars.push(new OpponentCarA(p,{x:_x, y:_y}, _carLength, _carWidth ,engine, opponentCars.length, startAngle))
         }
         else
         {
-            opponentCars.push(new OpponentCarB(p,{x:_x, y:_y}, carLength, carWidth ,engine, opponentCars.length, startAngle))
+            opponentCars.push(new OpponentCarB(p,{x:_x, y:_y}, _carLength, _carWidth ,engine, opponentCars.length, startAngle))
         }
         
     }
-    //spawn the opponent cars inside the start zone based on the provided number of cars
-    //It starts with filling the first half with carA and the fill the remaining with carB
+    /**spawn the opponent cars inside the start zone based on the provided number of cars
+    It starts with filling the first half with carA and the fill the remaining with carB
+    *-numberOfOpponentCars: number*/
     let spawnOpponentCars = (numberOfOpponentCars)=>
     {
         for(let i = 0; i < numberOfOpponentCars/2; i++)
@@ -162,7 +170,7 @@ const sketch = (p)=>
             sparks[i].draw(p);
         }
     }
-    /**clears the instances and reinitiates */
+    /**clears the instances , the MAtterjs engine and reinitiate them*/
     let resetGame = ()=>
     {
         playerCar = null;
@@ -182,7 +190,7 @@ const sketch = (p)=>
     }
     /*#################################### Event Listeners ##############################################*/
     /**it is an event listerner for instante action when collision happens
-     * it manages collision maneuver, sparking and adding collision data to the car instances
+     it manages collision maneuver, sparking and adding collision data to the car instances, and pulse on the walls
      */
     Events.on(engine, 'collisionStart', (event)=>
         {
@@ -190,12 +198,13 @@ const sketch = (p)=>
             collisionSpark(event, sparks, opponentCars, playerCar);
             collisionPulse(event, guard);
         });
-    /**This event listenr is applied to toogle the direction of cars when they are stuck
- */
+
+    /**This event listenr is applied to toogle the direction of cars when they are stuck */
     Events.on(engine, 'collisionActive', (event)=>collisionActiveManeuver(event,opponentCars));
 
 
     /*################################### Menu #############################################################*/
+    /**It creates a menu on the left top side of the canvas and will pop up when the mouse moves on that area */
     let  createMenu = ()=>
     {
 

@@ -1,6 +1,10 @@
 import Particle from "./Particle.js"
 export default class Smoker
 {
+    /**simulates an smooking exhaust for carB. It draws smoke for the exhaust when the acceleration reaches to a level (like
+     when the car engine is working hard).
+    *_maxAcceleration: number, _emitterSize:number
+    */
     constructor( _maxAcceleration, _emitterSize)
     {
         this.#maxAcceleration = _maxAcceleration;
@@ -12,7 +16,10 @@ export default class Smoker
     #particlesRadius = 5;
     #startAlpha = 150;
 
-    /**it takes the absolute acceleration of the car and absolute position of the emoitter */
+    /**adds a batch of particles to the smokeCloude array. The number of particles are based on the provided 
+    acceleration. it takes the absolute acceleration of the car and absolute position of the emitter
+     * _emitterPosition: {x:number, y:number}, _acceleration: positive number
+     */
     emmitSmoke( _emitterPosition, _acceleration)
     { 
         if(_acceleration > 0.005 )
@@ -28,17 +35,20 @@ export default class Smoker
             
         }
     }
-
-    draw(p)
+    /**draws the particles and update the smokeCloude array 
+     * _p: p5 instance
+    */
+    draw(_p)
     {
         this.#smokeCloude.forEach(particle => {
-            particle.drawEngineSmoke(p);
+            particle.drawEngineSmoke(_p);
         });
 
         this.#update();
     }
     
-    #update(p)
+    /**removes the faded particles to prevent memory leak */
+    #update()
     {
         for (let i = this.#smokeCloude.length - 1; i >= 0; i--)
         {

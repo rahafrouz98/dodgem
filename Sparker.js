@@ -1,7 +1,9 @@
 import Particle from "./Particle.js"
 export default class Sparker
 {
-    /**It creates a new spark at position x,y with a size based on collision depth */
+    /**creates a new spark at provided position based on the provided collision depth 
+     * _x: number, _y: number, _collisionDepth: number
+    */
     constructor(_x, _y, _collisionDepth)
     {
         this.#x = _x;
@@ -16,6 +18,9 @@ export default class Sparker
     #startAlpha = 150;
     sparkParticles=[];
     
+    /**initiates spark particles and adds them to the sparkParticles array. The number of
+     particles is calculated based on the collision depth
+     *_collisionDepth: number */
     generateSparkParticles(_collisionDepth)
     {
         
@@ -25,17 +30,20 @@ export default class Sparker
             this.sparkParticles.push(new Particle(this.#x, this.#y, this.#particleSize, this.#startAlpha, 0, CSSViewTransitionRule));
         }
     }
-    i
-    draw(p)
+    
+    /**draws the spark particles 
+     * _p: p5 instance
+    */
+    draw(_p)
     {
         this.sparkParticles.forEach(particle => {
-            particle.drawSpark(p);
+            particle.drawSpark(_p);
         });
     }
 
-    update(p)
+    /**removes the faded particles to prevent memory leak */
+    update()
     {
-        //remove faded particles
         for(let i = this.sparkParticles.length - 1; i >= 0; i--)
         {
             if(this.sparkParticles[i].alpha <= 5)

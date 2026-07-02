@@ -1,7 +1,8 @@
 import Sparker from "./Sparker.js"
 
 /**this function handles the cars instant reaction when collision happens with batrrier or another car.
- * It takes the event and the opponent car array as input
+ It takes the event and the opponent car array as input.
+ *_event: Matterjs Event instance, _opponentCars: a reference to the array of opponentCars in the sketch
  */
 export let collisionInstanteManeuver = (_event, _opponentCars)=> {
     //loop through all the pairs of collisions
@@ -38,8 +39,9 @@ export let collisionInstanteManeuver = (_event, _opponentCars)=> {
     })
 }
 
-/**this function will be used for handiling active collision between to change the headingof the engaged car and 
- *prevent it from getting stuck
+/**this function will be used for handeling active collision between cars to change the heading of the engaged car and 
+prevent it from getting stuck.
+*_event: Matterjs Event instance, _opponentCars: a reference to the array of opponentCars in the sketch
  */
 export let collisionActiveManeuver = (_event, _opponentCars)=>
 {
@@ -55,13 +57,20 @@ export let collisionActiveManeuver = (_event, _opponentCars)=>
         }
     })
 }
-/**this callback function generates spark particles when collision happens */
+/**this callback function generates spark particles when collision happens and adds the collision history to the engaged cars
+  *_event: Matterjs Event instance, _sparks: [Sparks], _opponentCars: [OpponentCars] , _playerCar: PlayerCar
+ 
+ */
 export let collisionSpark = (_event, _sparks, _opponentCars, _playerCar) =>
 {
     //loop through all the pairs of collisions
     _event.pairs.forEach(pair=>{
         const {bodyA, bodyB, collision} = pair;
-        if((bodyA.name == "opponentCar" || bodyA.name == "playerCar")&& (bodyB.name == "opponentCar" || bodyB.name == "playerCar"))
+        //if collision is between two cars or between a car and a pole (not wall)
+        if(((bodyA.name == "opponentCar" || bodyA.name == "playerCar")&& 
+           (bodyB.name == "opponentCar" || bodyB.name == "playerCar")) ||
+           ((bodyA.name == "opponentCar" || bodyA.name == "playerCar")&& bodyB.side == "pole") ||
+           ((bodyB.name == "opponentCar" || bodyB.name == "playerCar")&& bodyA.side == "pole"))
         {
             collision.supports.forEach(support=>_sparks.push(new Sparker(support.x, support.y, collision.depth)));
             //record collision data on the hidtory of cars
@@ -73,7 +82,9 @@ export let collisionSpark = (_event, _sparks, _opponentCars, _playerCar) =>
     })
 }
 
-/**this callback function generates pulse on the barrier when collision happens */
+/**this callback function generates pulse on the barrier when collision happens
+ * _event: Matterjs Event instance, _guard: Guard instance
+ */
 export let collisionPulse = (_event, _guard)=> {
     //loop through all the pairs of collisions
     _event.pairs.forEach(pair=>{

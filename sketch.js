@@ -289,7 +289,7 @@ This app uses ESM for modularity. The main file contains the p5 sketch in instan
 the instances of the app’s classes. 
 
 The Guard class represents the barrier around the arena. Inside this class a method simulates the pulse 
-on the walls when they are hit by cars by implementing  2D Perlin noise from p5 library.
+on the walls when they are hit by cars by implementing 2D Perlin noise from p5 library.
 
 The Car class moves forward and backward by increasing its acceleration and applying this acceleration as 
 force in Matter.js in the direction of the car wheels. The force is applied to the front of the car to simulate 
@@ -314,8 +314,7 @@ the shape of the related component to prevent them from overflowing. These layer
 
 Extensions:
 1-	I used an object to record the collision history of each side of the car. When the value of a specific side reaches a 
-threshold, the related headlight or taillight is damaged. This methos can be used for future extension to apply related 
-collapse on the sides of the car.
+threshold, the related headlight or taillight is damage. Also, a mechanism is designed to simulate the car body damage.
 2-	 When the total collision reaches its threshold,  the car stops moving , and fire and smoke effects is displayed on 
 the car. The fire remains on the car even if the car is moved by the force of other cars. It is simulated using Perlin 
 noise. Each instance is created from multiple array of particles (I call them seeds), each one simulate a stream of smoke.

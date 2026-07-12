@@ -15,11 +15,30 @@ export default class CarBody
         this.#cornersRadius = _width/20;
         this.#length = _length;
         this.#width = _width;
-        this.#hoodPeak = this.#width/7;
         this.#fenderWidth = this.#length/50;
+
+        this.#bodyCorners={
+            hoodPeak: {x:this.#length/2+this.#width/7,y:0},
+            right_front_fender1: {x: this.#length/2, y: this.#width/2},
+            right_front_fender2: {x: (this.#length/2-this.#fenderWidth*4), y: this.#width/2+this.#fenderWidth},
+            right_front_fender3: {x: this.#length/4, y: (this.#width/2+this.#fenderWidth)},
+            right_front_fender4: {x: this.#length/4-this.#fenderWidth*2, y: this.#width/2},
+            right_back_fender1: {x: -this.#length/4+this.#fenderWidth*2, y: this.#width/2},
+            right_back_fender2: {x: -this.#length/4, y: this.#width/2+this.#fenderWidth},
+            right_back_fender3:{x: -this.#length/2+this.#fenderWidth*2, y: this.#width/2+this.#fenderWidth},
+            right_back_fender4:{x: -this.#length/2, y: this.#width/2},
+            left_back_fender4: {x: -this.#length/2, y: -this.#width/2},
+            left_back_fender3: {x: -this.#length/2+this.#fenderWidth*2, y: -this.#width/2-this.#fenderWidth},
+            left_back_fender2: {x: -this.#length/4,  y:-this.#width/2-this.#fenderWidth},
+            left_back_fender1: {x: -this.#length/4+this.#fenderWidth*2, y: -this.#width/2},
+            left_front_fender4: {x: this.#length/4-this.#fenderWidth*2, y: -this.#width/2},
+            left_front_fender3: {x: this.#length/4, y: -(this.#width/2+this.#fenderWidth)},
+            left_front_fender2: {x: this.#length/2-this.#fenderWidth*4, y: -(this.#width/2+this.#fenderWidth)},
+            left_front_fender1: {x: this.#length/2, y: -this.#width/2}
+    }
         
 
-        this.physic = Bodies.fromVertices(_position.x, _position.y, this.#generateVertices(_length, _width) ,{
+        this.physic = Bodies.fromVertices(_position.x, _position.y, this.#generateVertices() ,{
                 isStatic:false,
                 friction:0.3,
                 frictionAir:0.3,
@@ -36,14 +55,14 @@ export default class CarBody
 
         /*###############################initialize window crack layers#################################  */
         //starts with no crack
-        this.#frontWindowCrack = this.#initiallizeCrackGraph(this.#width/2, this.#length/2);
-        this.#backWindowCrack = this.#initiallizeCrackGraph(this.#width/4, this.#length/2.4);
-        this.#rightWindowCrack = this.#initiallizeCrackGraph(this.#width*.83, this.#length*.08);
-        this.#leftWindowCrack = this.#initiallizeCrackGraph(this.#width*.83, this.#length*.08);
-        this.#rightHeadlightCrack = this.#initiallizeCrackGraph(this.#width/10, this.#width/5);
-        this.#leftHeadlightCrack = this.#initiallizeCrackGraph(this.#width/10, this.#width/5);
-        this.#rightTaillightCrack = this.#initiallizeCrackGraph(this.#width/10, this.#width/4);
-        this.#leftTaillightCrack = this.#initiallizeCrackGraph(this.#width/10, this.#width/4);
+        this.#frontWindowCrack = this.#createCrackGraph(this.#width/2, this.#length/2);
+        this.#backWindowCrack = this.#createCrackGraph(this.#width/4, this.#length/2.4);
+        this.#rightWindowCrack = this.#createCrackGraph(this.#width*.83, this.#length*.08);
+        this.#leftWindowCrack = this.#createCrackGraph(this.#width*.83, this.#length*.08);
+        this.#rightHeadlightCrack = this.#createCrackGraph(this.#length/2, this.#width/2);
+        this.#leftHeadlightCrack = this.#createCrackGraph(this.#length/2, this.#width/2);
+        this.#rightTaillightCrack = this.#createCrackGraph(this.#length/2, this.#width/2);
+        this.#leftTaillightCrack = this.#createCrackGraph(this.#length/2, this.#width/2);
 
         //car starts with 100% life
         this.remainedLife = 100
@@ -54,7 +73,6 @@ export default class CarBody
     //percentage of remained life
     #length;
     #width;
-    #hoodPeak;
     #fenderWidth
     #cornersRadius;
     #color;
@@ -77,6 +95,46 @@ export default class CarBody
         "left":0,
         "front-left":0
     }
+    #bodyCorners;
+    #shrinkFront(depth)
+    {
+        this.#bodyCorners.hoodPeak.x -= Math.random()*depth*.5
+    }
+    #shrinkLeftFront(depth)
+    {
+        this.#bodyCorners.left_front_fender1.x -= Math.random()*depth*.2
+        this.#bodyCorners.left_front_fender1.y += Math.random()*depth*.02
+        this.#bodyCorners.left_front_fender2.x = this.#bodyCorners.left_front_fender1.x-this.#fenderWidth*4
+        this.#bodyCorners.left_front_fender2.y = this.#bodyCorners.left_front_fender1.y+this.#fenderWidth
+    } 
+    #shrinkRightFront(depth)
+    {
+        this.#bodyCorners.right_front_fender1.x -= Math.random()*depth*.2
+        this.#bodyCorners.right_front_fender1.y -= Math.random()*depth*.02
+        this.#bodyCorners.right_front_fender2.x = this.#bodyCorners.right_front_fender1.x-this.#fenderWidth*4
+        this.#bodyCorners.right_front_fender2.y = this.#bodyCorners.right_front_fender1.y-this.#fenderWidth
+    }
+    #shrinkRightBack(depth)
+    {
+        this.#bodyCorners.right_back_fender4.x += Math.random()*depth*.2
+        this.#bodyCorners.right_back_fender4.y -= Math.random()*depth*.02
+        this.#bodyCorners.right_back_fender3.x = this.#bodyCorners.right_back_fender4.x+this.#fenderWidth*2
+        this.#bodyCorners.right_back_fender3.y =  this.#bodyCorners.right_back_fender4.y-this.#fenderWidth
+    }
+     #shrinkLeftBack(depth)
+    {
+        this.#bodyCorners.left_back_fender4.x += Math.random()*depth*.2
+        this.#bodyCorners.left_back_fender4.y += Math.random()*depth*.02
+        this.#bodyCorners.left_back_fender3.x = this.#bodyCorners.left_back_fender4.x+this.#fenderWidth*2
+        this.#bodyCorners.left_back_fender3.y =  this.#bodyCorners.left_back_fender4.y+this.#fenderWidth
+    }
+    #shrinkBody ={
+        "front":(depth)=>{this.#shrinkFront(depth)},
+        "front-left":(depth)=>{this.#shrinkLeftFront(depth)},
+        "front-right": (depth)=>{this.#shrinkRightFront(depth)},
+        "back-right": (depth)=>{this.#shrinkRightBack(depth)},
+        "back-left": (depth)=>{this.#shrinkLeftBack(depth)},
+    }
     //this is an object of methods for updating the cracks on the windows, headlights and taillights
     #crackOnWindow={
         "front": ()=>{this.#updateWindowCrack(this.#frontWindowCrack)},
@@ -98,7 +156,6 @@ export default class CarBody
     #lightCollisionthreshold = 10;
     physic;
     remainedLife;
-
  
 
     /**it generates the vertices  of the car body and retirns as an array */
@@ -106,39 +163,39 @@ export default class CarBody
     {
         let vertices = [];
         //hood peak
-        vertices.push({x:this.#length/2+this.#hoodPeak, y: 0} )
+        vertices.push({...this.#bodyCorners.hoodPeak} )
         //right-front fender 1 
-        vertices.push({x: this.#length/2, y: this.#width/2});
+        vertices.push({...this.#bodyCorners.right_front_fender1});
         //right-front fender 2
-        vertices.push({x: (this.#length/2-this.#fenderWidth*2), y: this.#width/2+this.#fenderWidth});
+        vertices.push({...this.#bodyCorners.right_front_fender2});
         //right-front-fender 3
-        vertices.push({x: this.#length/4, y: (this.#width/2+this.#fenderWidth)});
+        vertices.push({...this.#bodyCorners.right_front_fender3});
         //right-front-fender 4
-        vertices.push({x: this.#length/4-this.#fenderWidth*2, y: this.#width/2});
+        vertices.push({...this.#bodyCorners.right_front_fender4});
         //right-back-fender 1
-        vertices.push({x: -this.#length/4+this.#fenderWidth*2, y: this.#width/2});
+        vertices.push({...this.#bodyCorners.right_back_fender1});
         //right-back-fender 2
-        vertices.push({x: -this.#length/4, y: this.#width/2+this.#fenderWidth});
+        vertices.push({...this.#bodyCorners.right_back_fender2});
         //right-back-fender 3
-        vertices.push({x: -this.#length/2+this.#fenderWidth*2, y: this.#width/2+this.#fenderWidth});
+        vertices.push({...this.#bodyCorners.right_back_fender3});
         //right-back-fender 4
-        vertices.push({x: -this.#length/2, y: this.#width/2});
+        vertices.push({...this.#bodyCorners.right_back_fender4});
         //left-back-fender 4
-        vertices.push({x: -this.#length/2, y: -this.#width/2});
+        vertices.push({...this.#bodyCorners.left_back_fender4});
         //left-back-fender 3
-        vertices.push({x: -this.#length/2+this.#fenderWidth*2, y: -this.#width/2-this.#fenderWidth});
+        vertices.push({...this.#bodyCorners.left_back_fender3});
         //left-back-fender 2
-        vertices.push({x: -this.#length/4,  y:-this.#width/2-this.#fenderWidth});
+        vertices.push({...this.#bodyCorners.left_back_fender2});
         //left-back-fender 1
-        vertices.push({x: -this.#length/4+this.#fenderWidth*2, y: -this.#width/2});
+        vertices.push({...this.#bodyCorners.left_back_fender1});
         //left-front-fender 4
-        vertices.push({x: this.#length/4-this.#fenderWidth*2, y: -this.#width/2});
+        vertices.push({...this.#bodyCorners.left_front_fender4});
         //left-front-fender 3
-        vertices.push({x: this.#length/4, y: -(this.#width/2+this.#fenderWidth)});
+        vertices.push({...this.#bodyCorners.left_front_fender3});
         //left-front-fender 2
-        vertices.push({x: this.#length/2-this.#fenderWidth*2, y: -(this.#width/2+this.#fenderWidth)});
+        vertices.push({...this.#bodyCorners.left_front_fender2});
         //left-front-fender 1
-        vertices.push({x: this.#length/2, y: -this.#width/2});
+        vertices.push({...this.#bodyCorners.left_front_fender1});
 
         return vertices;
     }
@@ -146,7 +203,7 @@ export default class CarBody
     /**it generates an empty p5 graph based on the provided width and height. 
      * the graph will be used as a layer to simulate cracks
      */
-    #initiallizeCrackGraph = (w,h)=>
+    #createCrackGraph = (w,h)=>
     {
         let p = this.#p;
         let graph = p.createGraphics(w, h);
@@ -376,17 +433,17 @@ export default class CarBody
             p.fill(200,200,200);
             p.beginShape();
             //left-front-fender 2
-            p.vertex(this.#length/2-this.#fenderWidth*2,-(this.#width/2+this.#fenderWidth));
+            p.vertex(this.#bodyCorners.left_front_fender2.x,this.#bodyCorners.left_front_fender2.y);
             //left-front-fender 1
-            p.vertex(this.#length/2, -this.#width/2);
+            p.vertex(this.#bodyCorners.left_front_fender1.x,this.#bodyCorners.left_front_fender1.y);
             //hood peak
-            p.vertex(this.#length/2+this.#hoodPeak, 0)
+            p.vertex(this.#bodyCorners.hoodPeak.x, this.#bodyCorners.hoodPeak.y)
             //right-front fender 1 
-            p.vertex(this.#length/2,this.#width/2);
+            p.vertex(this.#bodyCorners.right_front_fender1.x, this.#bodyCorners.right_front_fender1.y);
             //right-front fender 2
-            p.vertex((this.#length/2-this.#fenderWidth*2), this.#width/2+this.#fenderWidth);
+            p.vertex(this.#bodyCorners.right_front_fender2.x, this.#bodyCorners.right_front_fender2.y );
             //grill top-center
-            p.vertex(this.#length/2+this.#fenderWidth*2,0)
+            p.vertex(this.#bodyCorners.hoodPeak.x-this.#fenderWidth,this.#bodyCorners.hoodPeak.y)
             p.endShape(p.CLOSE);
         p.pop();
     }
@@ -399,13 +456,13 @@ export default class CarBody
             p.fill(200,200,200);
             p.beginShape();
             //right-back-fender 3
-            p.vertex(-this.#length/2+this.#fenderWidth*2, this.#width/2+this.#fenderWidth);
+            p.vertex(this.#bodyCorners.right_back_fender3.x, this.#bodyCorners.right_back_fender3.y);
             //right-back-fender 4
-            p.vertex(-this.#length/2, this.#width/2);
+            p.vertex(this.#bodyCorners.right_back_fender4.x, this.#bodyCorners.right_back_fender4.y);
             //left-back-fender 4
-            p.vertex(-this.#length/2,-this.#width/2);
+            p.vertex(this.#bodyCorners.left_back_fender4.x, this.#bodyCorners.left_back_fender4.y);
             //left-back-fender 3
-            p.vertex(-this.#length/2+this.#fenderWidth*2, -this.#width/2-this.#fenderWidth);
+            p.vertex(this.#bodyCorners.left_back_fender3.x, this.#bodyCorners.left_back_fender3.y);
             p.endShape(p.CLOSE);
         p.pop();
      }
@@ -424,7 +481,8 @@ export default class CarBody
             p.endClip();
 
             //add crack
-            p.image(this.#rightTaillightCrack, -this.#length/2+this.#fenderWidth*.3, (this.#width/2-this.#fenderWidth*7))
+            p.image(this.#rightTaillightCrack, this.#bodyCorners.right_back_fender4.x, 
+                0)
         p.pop();
     }
         
@@ -438,13 +496,17 @@ export default class CarBody
         p.strokeWeight(0.1);
         p.beginShape();
         //top-right
-        p.vertex(-this.#length/2+this.#fenderWidth*1.7, this.#width/2-this.#fenderWidth);
+        p.vertex( this.#bodyCorners.right_back_fender3.x-this.#fenderWidth*.3, 
+            this.#bodyCorners.right_back_fender3.y-this.#fenderWidth);
         //top-left
-        p.vertex(-this.#length/2+this.#fenderWidth*1.7, this.#width/2-this.#fenderWidth*8);
+        p.vertex(this.#bodyCorners.right_back_fender3.x-this.#fenderWidth*.3, 
+             this.#bodyCorners.right_back_fender3.y-this.#fenderWidth*9);
         //bottom-left
-        p.vertex( -this.#length/2+this.#fenderWidth*.3,this.#width/2-this.#fenderWidth*7)
+        p.vertex( this.#bodyCorners.right_back_fender4.x+this.#fenderWidth*.3,
+            this.#bodyCorners.right_back_fender4.y-this.#fenderWidth*7)
         //bottom-right
-        p.vertex( -this.#length/2+this.#fenderWidth*.3,this.#width/2-this.#fenderWidth*1.4)
+        p.vertex( this.#bodyCorners.right_back_fender4.x+this.#fenderWidth*.3,
+            this.#bodyCorners.right_back_fender4.y-this.#fenderWidth)
         p.endShape(p.CLOSE);
 }
 
@@ -462,7 +524,8 @@ export default class CarBody
             p.endClip();
 
             //add crack
-            p.image(this.#leftTaillightCrack, -this.#length/2+this.#fenderWidth*.3, -(this.#width/2-this.#fenderWidth*1.4))
+            p.image(this.#leftTaillightCrack, this.#bodyCorners.left_back_fender4.x, 
+                this.#bodyCorners.left_back_fender4.y)
         p.pop();
     }
     /** draw  left taillight glass */
@@ -475,15 +538,18 @@ export default class CarBody
         p.strokeWeight(0.1);
         p.beginShape();
         //top-right
-        p.vertex(-this.#length/2+this.#fenderWidth*1.7, -(this.#width/2-this.#fenderWidth));
+        p.vertex(this.#bodyCorners.left_back_fender3.x-this.#fenderWidth*.3, 
+            this.#bodyCorners.left_back_fender3.y+this.#fenderWidth);
         //top-left
-        p.vertex(-this.#length/2+this.#fenderWidth*1.7, -(this.#width/2-this.#fenderWidth*8));
+        p.vertex(this.#bodyCorners.left_back_fender3.x-this.#fenderWidth*.3, 
+             this.#bodyCorners.left_back_fender3.y+this.#fenderWidth*9);
         //bottom-left
-        p.vertex( -this.#length/2+this.#fenderWidth*.3,-(this.#width/2-this.#fenderWidth*7))
+        p.vertex(this.#bodyCorners.left_back_fender4.x+this.#fenderWidth*.3,
+            this.#bodyCorners.left_back_fender4.y+this.#fenderWidth*7)
         //bottom-right
-        p.vertex( -this.#length/2+this.#fenderWidth*.3,-(this.#width/2-this.#fenderWidth*1.4))
+        p.vertex( this.#bodyCorners.left_back_fender4.x+this.#fenderWidth*.3,
+            this.#bodyCorners.left_back_fender4.y+this.#fenderWidth)
         p.endShape(p.CLOSE);
-        
     }
     /**left headlight */
     #drawLeftHeadlight()
@@ -500,7 +566,8 @@ export default class CarBody
         p.endClip();
 
         //add crack
-        p.image(this.#leftHeadlightCrack, this.#length/2-this.#fenderWidth*1.7, -(this.#width/2-this.#fenderWidth*.3));
+        p.image(this.#leftHeadlightCrack, this.#length/4,
+                  -this.#width/2);
 
         p.pop();
     }
@@ -514,13 +581,18 @@ export default class CarBody
         p.strokeWeight(0.1);
         p.beginShape();
         //top-left
-        p.vertex(this.#length/2-this.#fenderWidth*1.7,-(this.#width/2-this.#fenderWidth*.3));
+        p.vertex(this.#bodyCorners.left_front_fender2.x+this.#fenderWidth*.4,
+                  this.#bodyCorners.left_front_fender2.y+this.#fenderWidth*.5);
         //botrom-left
-        p.vertex(this.#length/2-this.#fenderWidth*.3, -(this.#width/2-this.#fenderWidth*.8));
+        p.vertex(this.#bodyCorners.left_front_fender1.x-this.#fenderWidth*.2, 
+            this.#bodyCorners.left_front_fender1.y+this.#fenderWidth*.5);
         //bottom-right
-        p.vertex(this.#length/2+this.#fenderWidth*1.2, -(this.#width/2-this.#fenderWidth*6));
+        p.vertex(this.#bodyCorners.hoodPeak.x-this.#fenderWidth*2.2, 
+            this.#bodyCorners.hoodPeak.y-this.#fenderWidth*5);
         //top-right
-        p.vertex(this.#length/2+this.#fenderWidth*.3,-(this.#width/2-this.#fenderWidth*6));
+        p.vertex(this.#bodyCorners.hoodPeak.x-this.#fenderWidth*3,
+            this.#bodyCorners.hoodPeak.y-this.#fenderWidth*5.3
+        );
         p.endShape(p.CLOSE);
     }
 
@@ -538,7 +610,7 @@ export default class CarBody
             p.endClip();
 
             //add crack
-            p.image(this.#rightHeadlightCrack, this.#length/2-this.#fenderWidth, (this.#width/2-this.#fenderWidth*6))
+            p.image(this.#rightHeadlightCrack, this.#length/4, 0)
         p.pop();
     }
     /**draw right headlight glass */
@@ -551,13 +623,17 @@ export default class CarBody
         p.strokeWeight(0.1);
         p.beginShape();
         //top-left
-        p.vertex(this.#length/2-this.#fenderWidth*1.7, (this.#width/2-this.#fenderWidth*.3));
+        p.vertex(this.#bodyCorners.right_front_fender2.x+this.#fenderWidth*.4,
+                  this.#bodyCorners.right_front_fender2.y-this.#fenderWidth*.5);
         //botrom-left
-        p.vertex(this.#length/2-this.#fenderWidth*.3, (this.#width/2-this.#fenderWidth*.8));
+        p.vertex(this.#bodyCorners.right_front_fender1.x-this.#fenderWidth*.5, 
+            this.#bodyCorners.right_front_fender1.y-this.#fenderWidth*.3);
         //bottom-right
-        p.vertex(this.#length/2+this.#fenderWidth*1.2, (this.#width/2-this.#fenderWidth*6));
+        p.vertex(this.#bodyCorners.hoodPeak.x-this.#fenderWidth*2, 
+            this.#bodyCorners.hoodPeak.y+this.#fenderWidth*5);
         //top-right
-        p.vertex(this.#length/2+this.#fenderWidth*.3, (this.#width/2-this.#fenderWidth*6));
+        p.vertex(this.#bodyCorners.hoodPeak.x-this.#fenderWidth*3,
+            this.#bodyCorners.hoodPeak.y+this.#fenderWidth*5.3);
         p.endShape(p.CLOSE);
         
     }
@@ -621,6 +697,9 @@ export default class CarBody
 
         /*#################### crack on windows##########################*/
         this.#crackOnWindow[_collisionSide]?.();
+
+        /*################### shrink the body ###########################*/
+        this.#shrinkBody[_collisionSide]?.(_depth)
 
         /*#################### update and check the remained life ###################*/
         let totalCollision = 0;
